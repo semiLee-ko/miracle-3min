@@ -1,5 +1,5 @@
 // Core Application Logic
-import { saveRecord, getTotalSavings, getSuccessCount, getWeeklyStats, injectMockData, getMonthlyStats, getTodaySuccessCount } from './firebase.js';
+import { saveRecord, getTotalSavings, getSuccessCount, getWeeklyStats, injectMockData, getMonthlyStats, getTodaySuccessCount, resetUserData } from './firebase.js';
 
 export const quotes = [
     "오늘 먹을 치킨을 내일로 미루면,<br>통장 잔고가 웃는다.",
@@ -162,15 +162,15 @@ export const appLogic = {
                 startBtn.classList.remove('opacity-0');
             }
         }, 1500);
-        // One-time Mock Data Injection (Disabled by user request)
-        /*
-        if (!localStorage.getItem('mockDataInjected')) {
-            console.log("💉 Force Injecting Mock Data...");
-            injectMockData().then(() => {
-                localStorage.setItem('mockDataInjected', 'true');
-            });
+        // One-time DB Reset (Requested by user)
+        if (!localStorage.getItem('dbResetDone_v1')) {
+            await resetUserData();
+            localStorage.setItem('dbResetDone_v1', 'true');
+            // Reset local savings display immediately
+            appState.totalSavings = 0;
+            document.getElementById('total-savings-display').innerText = "0";
+            appLogic.showCustomAlert("데이터가 초기화되었습니다.");
         }
-        */
     },
 
     checkDailyLimit: () => {

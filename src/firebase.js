@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, serverTimestamp, collection, addDoc, query, where, getDocs, Timestamp, orderBy } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, increment, serverTimestamp, collection, addDoc, query, where, getDocs, Timestamp, orderBy } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: "AIzaSyALxzp8NTMb05UygqzEQskMsUmF5Si1e-U",
@@ -226,5 +226,32 @@ export const getTodaySuccessCount = async () => {
     } catch (e) {
         console.error("Error fetching today stats:", e);
         return 0; // Fail open or closed? Let's say 0 to not block if error.
+    }
+};
+
+// Reset User Data (Clear History & Aggregates)
+export const resetUserData = async () => {
+    if (!currentUser) return;
+    const userRef = doc(db, "users", currentUser.uid);
+    const historyRef = collection(userRef, "history");
+
+    try {
+        console.log("⚠️ Resetting User Data...");
+
+        // 1. Delete all history documents
+        const snapshot = await getDocs(historyRef);
+        const batchPromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(batchPromises);
+
+        // 2. Reset Aggregates
+        await setDoc(userRef, {
+            totalSavings: 0,
+            successCount: 0,
+            lastPlayed: serverTimestamp()
+        }, { merge: true });
+
+        console.log("✅ User Data Reset Complete");
+    } catch (e) {
+        console.error("Error resetting data:", e);
     }
 };
