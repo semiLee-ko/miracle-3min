@@ -345,7 +345,7 @@ export const appLogic = {
             if (chillFrame) {
                 const randomType = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
                 chillFrame.setAttribute('scrolling', 'auto'); // Ensure scrolling is enabled if needed
-                chillFrame.src = `/chill/type${randomType}.html`;
+                chillFrame.src = `chill/type${randomType}.html`;
             }
         } else if (toolName === 'breathe') {
             appLogic.startBreathingGuide();
