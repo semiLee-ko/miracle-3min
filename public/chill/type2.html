@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>지출 발굴 현장</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+        /* 영수증 폰트 */
+
+        body {
+            margin: 0;
+            padding: 20px;
+            /* Add horizontal padding as well */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #333;
+            font-family: 'Noto Sans KR', sans-serif;
+            overflow-y: auto;
+            touch-action: pan-y;
+        }
+
+        h2 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            text-align: center;
+            line-height: 1.4;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        /* 컨테이너 */
+        /* 컨테이너 */
+        .scratch-container {
+            position: relative;
+            width: 100%;
+            /* fluid width */
+            max-width: 300px;
+            /* capped at design width */
+            aspect-ratio: 300 / 480;
+            /* maintain aspect ratio */
+            height: auto;
+            /* let width drive height */
+            /* 영수증 길이에 맞춰 조금 늘림 */
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            background: #fff;
+            overflow: hidden;
+            user-select: none;
+            flex-shrink: 0;
+            margin: 0 10px;
+            /* Explicit horizontal margin */
+        }
+
+        /* 1층: 결과물 (오직 영수증) */
+        .result-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            z-index: 1;
+        }
+
+        /* 영수증 스타일 */
+        .receipt {
+            width: 90%;
+            height: 92%;
+            padding: 20px;
+            box-sizing: border-box;
+            font-family: 'Courier Prime', monospace;
+            color: #333;
+            background: #fff;
+            border: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px dashed #333;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .receipt-header h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.2rem;
+        }
+
+        .receipt-body {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .receipt-footer {
+            border-top: 2px dashed #333;
+            padding-top: 15px;
+            margin-top: 15px;
+            text-align: right;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #d63031;
+        }
+
+        .stamp {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            border: 5px solid #d63031;
+            color: #d63031;
+            padding: 10px 10px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            opacity: 0.2;
+            text-transform: uppercase;
+            pointer-events: none;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* 2층: 긁는 캔버스 (모래) */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            cursor: pointer;
+            transition: opacity 0.5s;
+            touch-action: none;
+            /* Prevent browser scrolling on canvas */
+        }
+
+        /* Retry Overlay Style */
+        .game-over-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* background-color: rgba(255, 255, 255, 0.4); Removed for visibility */
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 20;
+            /* backdrop-filter: blur(2px); Removed for visibility */
+        }
+
+        .game-over-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .retry-btn-styled {
+            width: 60px;
+            height: 60px;
+            background-color: #3182f6;
+            /* Toss Blue */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(49, 130, 246, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .retry-btn-styled:active {
+            transform: scale(0.92);
+            box-shadow: 0 2px 6px rgba(49, 130, 246, 0.3);
+        }
+
+        .retry-btn-styled svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+            stroke-width: 2.5;
+        }
+
+        /* Scroll Controls */
+        .scroll-controls {
+            position: fixed;
+            top: 50%;
+            right: 15px;
+            /* Slightly adjusted right position */
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            /* Reduced gap */
+            z-index: 100;
+        }
+
+        .scroll-controls button {
+            width: 36px;
+            /* Reduced size */
+            height: 36px;
+            /* Reduced size */
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            /* Reduced font size */
+            color: #333;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        .scroll-controls button:active {
+            transform: scale(0.9);
+            background-color: rgba(255, 255, 255, 1);
+        }
+
+        /* Side UI Wrapper (Default Portrait) */
+        .side-ui {
+            display: contents;
+            /* Allow children to participate in body flex */
+        }
+
+        /* Card Scroll Wrapper (Default Portrait) */
+        .card-scroll-wrapper {
+            display: contents;
+            /* Allow children to participate in body flex */
+        }
+
+        /* Order for Portrait */
+        .side-ui h2 {
+            order: 1;
+        }
+
+        .card-scroll-wrapper .scratch-container {
+            order: 2;
+            margin-bottom: 20px;
+        }
+
+        /* Landscape Mode Adjustment */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                flex-direction: row;
+                justify-content: center;
+                align-items: stretch;
+                /* Stretch to fill height */
+                gap: 0;
+                overflow: hidden;
+                /* Disable global scroll */
+                height: 100vh;
+                padding: 0;
+            }
+
+            .card-scroll-wrapper {
+                display: flex;
+                flex: 1;
+                height: 100%;
+                overflow-y: auto;
+                /* Enable scroll ONLY here */
+                justify-content: center;
+                align-items: flex-start;
+                padding: 20px;
+                box-sizing: border-box;
+                order: 1;
+            }
+
+            .scratch-container {
+                width: 300px;
+                height: 480px;
+                transform: none;
+                margin: auto;
+                /* Center in scroll area */
+                flex-shrink: 0;
+            }
+
+            .side-ui {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                order: 2;
+                width: 50%;
+                /* Equal split */
+                flex: 1;
+                /* Equal flex share */
+                height: 100%;
+                text-align: center;
+                gap: 20px;
+                overflow: hidden;
+                /* No scroll */
+                flex-shrink: 0;
+            }
+
+            .side-ui h2 {
+                order: unset;
+                margin-bottom: 0;
+                font-size: 1rem;
+                text-align: center;
+                white-space: normal;
+            }
+
+            .side-ui h2 br {
+                display: block;
+            }
+
+            .side-ui h2::after {
+                content: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card-scroll-wrapper">
+        <div class="scratch-container" id="container">
+            <!-- 결과 레이어 -->
+            <div class="result-layer" id="resultLayer"></div>
+            <!-- 스크래치 레이어 -->
+            <canvas id="scratchCanvas"></canvas>
+
+            <!-- Game Over Overlay -->
+            <div class="game-over-overlay" id="gameOverOverlay">
+                <div class="retry-btn-styled" onclick="resetGame()">
+                    <!-- SVG Retry Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.5 2v6h-6"></path>
+                        <path d="M2.5 22v-6h6"></path>
+                        <path d="M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8"></path>
+                        <path d="M22 12.5a10 10 0 0 1-18.8 4.2L2.5 16"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="side-ui">
+        <h2>모래를 걷어내면<br>당신의 미래(?)가 보입니다</h2>
+    </div>
+
+    <div class="scroll-controls">
+        <button id="btnScrollUp" aria-label="Scroll Up">▲</button>
+        <button id="btnScrollDown" aria-label="Scroll Down">▼</button>
+    </div>
+
+    <script>
+        // Scroll Logic
+        const btnScrollUp = document.getElementById('btnScrollUp');
+        const btnScrollDown = document.getElementById('btnScrollDown');
+
+        function scrollPage(amount) {
+            const wrapper = document.querySelector('.card-scroll-wrapper');
+            const isLandscape = window.matchMedia('(max-height: 500px) and (orientation: landscape)').matches;
+
+            if (isLandscape) {
+                wrapper.scrollBy({ top: amount, behavior: 'smooth' });
+            } else {
+                window.scrollBy({ top: amount, behavior: 'smooth' });
+            }
+        }
+
+        if (btnScrollUp) btnScrollUp.addEventListener('click', () => scrollPage(-200));
+        if (btnScrollDown) btnScrollDown.addEventListener('click', () => scrollPage(200));
+
+        const canvas = document.getElementById('scratchCanvas');
+        const ctx = canvas.getContext('2d');
+        const resultLayer = document.getElementById('resultLayer');
+        const container = document.getElementById('container');
+        const gameOverOverlay = document.getElementById('gameOverOverlay');
+
+        // Use OffsetWidth/Height to match CSS if it changed, 
+        // BUT logic relies on fixed mapping? 
+        // If we use CSS transform, internal resolution stays 300x480 (best for resolution).
+        // If we change CSS width/height, we must update these.
+        // My CSS change above used 'transform: scale', so these can remain 300/480.
+        // HOWEVER, getPos event coordinates need to be scaled if we transform.
+
+        let width = 300;
+        let height = 480;
+
+        // Check if we need to adjust for scale in events
+        const isLandscape = window.innerHeight <= 500;
+        const scaleFactor = isLandscape ? 0.65 : 1;
+
+        // Actually, let's keep it simple: 
+        // transforming visually is easiest, but mouse coordinates might break.
+        // Let's rely on getBoundingClientRect which handles transforms nicely usually.
+
+        let isDrawing = false;
+        let revealed = false;
+
+        // 팩폭 영수증 데이터 (다양하게 추가)
+        const receipts = [
+            {
+                title: "지난주 금요일 밤",
+                items: [["불족발(대)", "38,000"], ["쟁반국수", "5,000"], ["배달팁", "4,500"]],
+                total: "47,500",
+                stamp: "지방 +1kg"
+            },
+            {
+                title: "스트레스 비용",
+                items: [["마라샹궈", "32,000"], ["꿔바로우", "18,000"], ["혈관건강", "-50"]],
+                total: "50,000",
+                stamp: "나트륨 폭발"
+            },
+            {
+                title: "새벽 2시의 유혹",
+                items: [["황금치킨", "22,000"], ["치즈볼(5개)", "5,000"], ["콜라 사이즈업", "2,000"]],
+                total: "29,000",
+                stamp: "얼굴 붓기 예약"
+            },
+            {
+                title: "카페인 충전",
+                items: [["아메리카노", "4,500"], ["크로플", "4,800"], ["배달팁", "3,500"], ["최소주문용 쿠키", "3,000"]],
+                total: "15,800",
+                stamp: "배보다 배꼽"
+            },
+            {
+                title: "편의점 털이",
+                items: [["맥주 4캔", "11,000"], ["육포/오징어", "8,900"], ["컵라면", "1,500"]],
+                total: "21,400",
+                stamp: "뱃살 적립"
+            },
+            {
+                title: "텅장 알림",
+                items: [["이번달 배달비", "154,000"], ["지난달 배달비", "210,000"], ["저축 가능액", "0"]],
+                total: "364,000",
+                stamp: "거지 꼴 못면함"
+            }
+        ];
+
+        function initCanvas() {
+            canvas.width = width;
+            canvas.height = height;
+
+            // 모래 그리기
+            ctx.fillStyle = '#e6c288';
+            ctx.fillRect(0, 0, width, height);
+
+            // 모래 노이즈 추가
+            ctx.globalCompositeOperation = 'source-over';
+            for (let i = 0; i < 35000; i++) {
+                ctx.fillStyle = Math.random() < 0.5 ? '#dbb078' : '#cdaa6d';
+                ctx.fillRect(Math.random() * width, Math.random() * height, 2, 2);
+            }
+
+            ctx.globalCompositeOperation = 'destination-out';
+            isDrawing = false;
+            revealed = false;
+            canvas.style.opacity = 1;
+            gameOverOverlay.classList.remove('active'); // Hide overlay
+        }
+
+        function initResult() {
+            resultLayer.innerHTML = '';
+
+            // 랜덤 영수증 선택 (이제 동전 없음)
+            const data = receipts[Math.floor(Math.random() * receipts.length)];
+
+            let itemsHtml = data.items.map(item => `
+                <div class="item-row">
+                    <span>${item[0]}</span>
+                    <span>${item[1]}</span>
+                </div>
+            `).join('');
+
+            resultLayer.innerHTML = `
+                <div class="receipt">
+                    <div class="receipt-header">
+                        <h3>${data.title}</h3>
+                        <small>${new Date().toLocaleDateString()}</small>
+                    </div>
+                    <div class="receipt-body">
+                        ${itemsHtml}
+                    </div>
+                    <div class="receipt-footer">
+                        Total: -${data.total}
+                    </div>
+                    <div class="stamp">${data.stamp}</div>
+                </div>
+            `;
+        }
+
+        // 긁기 로직
+        function scratch(x, y) {
+            if (revealed) return;
+            ctx.beginPath();
+            ctx.arc(x, y, 25, 0, Math.PI * 2);
+            ctx.fill();
+            checkReveal();
+        }
+
+        function checkReveal() {
+            const imageData = ctx.getImageData(0, 0, width, height);
+            const pixels = imageData.data;
+            let transparent = 0;
+            // Iterate every 40th byte (every 10th pixel)
+            for (let i = 0; i < pixels.length; i += 40) {
+                // Alpha channel is at i+3
+                if (pixels[i + 3] === 0) transparent++;
+            }
+
+            // Total checked pixels = pixels.length / 40
+            // If more than 40% is cleared
+            if (transparent > (pixels.length / 40) * 0.4) {
+                revealAll();
+            }
+        }
+
+        // Haptic Helper
+        function triggerHaptic(type) {
+            try {
+                const bedrock = window.Bedrock || window.parent.Bedrock;
+                if (bedrock && bedrock.generateHapticFeedback) {
+                    bedrock.generateHapticFeedback({ type: type });
+                }
+            } catch (e) {
+                console.log("Haptic error:", e);
+            }
+        }
+
+        function revealAll() {
+            if (revealed) return;
+            revealed = true;
+
+            // Haptic Feedback for Success
+            triggerHaptic('success');
+
+            canvas.style.transition = 'opacity 0.6s';
+            canvas.style.opacity = 0;
+
+            // Show overlay after canvas fades out
+            setTimeout(() => {
+                const gameOverOverlay = document.getElementById('gameOverOverlay');
+                if (gameOverOverlay) {
+                    gameOverOverlay.classList.add('active');
+                }
+            }, 600);
+        }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            let x, y;
+            if (e.changedTouches) {
+                x = e.changedTouches[0].clientX - rect.left;
+                y = e.changedTouches[0].clientY - rect.top;
+            } else {
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            }
+            return { x, y };
+        }
+
+        ['mousedown', 'touchstart'].forEach(evt => {
+            canvas.addEventListener(evt, (e) => {
+                if (e.type === 'touchstart') {
+                    if (e.cancelable) e.preventDefault(); // Prevent scroll start
+                }
+                isDrawing = true;
+                const { x, y } = getPos(e);
+                scratch(x, y);
+            }, { passive: false });
+        });
+
+        ['mousemove', 'touchmove'].forEach(evt => {
+            canvas.addEventListener(evt, (e) => {
+                if (isDrawing) {
+                    // Fix: Check cancelable
+                    if (e.cancelable) {
+                        e.preventDefault();
+                    }
+                    const { x, y } = getPos(e);
+                    scratch(x, y);
+                }
+            }, { passive: false });
+        });
+
+        ['mouseup', 'touchend'].forEach(evt => {
+            canvas.addEventListener(evt, () => {
+                isDrawing = false;
+            });
+        });
+        // 리셋 함수
+        function resetGame() {
+            initResult();
+            initCanvas();
+        }
+
+        // 초기화
+        initResult();
+        initCanvas();
+
+    </script>
+</body>
+
+</html>

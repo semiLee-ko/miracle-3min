@@ -1,0 +1,27 @@
+{
+    "name": "miracle-3min",
+    "version": "1.0.0",
+    "description": "앱인토스(Apps in Toss) 미니앱 - 3분의 기적",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "granite dev",
+        "build": "granite build",
+        "deploy": "ait deploy"
+    },
+    "keywords": [
+        "appentos",
+        "mini-app"
+    ],
+    "author": "User",
+    "license": "ISC",
+    "type": "module",
+    "devDependencies": {
+        "vite": "^5.0.0"
+    },
+    "dependencies": {
+        "@apps-in-toss/framework": "^1.5.2",
+        "@apps-in-toss/web-framework": "^1.5.2",
+        "firebase": "^12.6.0"
+    }
+}

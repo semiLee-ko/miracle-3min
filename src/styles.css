@@ -1,0 +1,455 @@
+body {
+    font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background-color: #f3f4f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* --- THEME COLORS --- */
+:root {
+    --primary-bg: #5B4DFF;
+    --card-bg: #FFFFFF;
+    --accent-yellow: #FFD233;
+    --text-dark: #2D2D2D;
+}
+
+/* Full Screen App Frame */
+#app-frame {
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--primary-bg);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- BACKGROUND PARTICLES --- */
+.bg-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    animation: floatParticle infinite linear;
+    bottom: -30px;
+}
+
+@keyframes floatParticle {
+    0% {
+        transform: translateY(0) scale(0.8);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 0.8;
+    }
+
+    80% {
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: translateY(-100vh) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* --- CARD UI --- */
+.main-card {
+    background-color: var(--card-bg);
+    border-radius: 2rem 2rem 0 0;
+    width: 100%;
+    padding: 1.2rem 1.2rem 1.5rem 1.2rem;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 10;
+}
+
+/* --- CHARACTER ANIMATIONS --- */
+.character-container {
+    width: 180px;
+    height: 180px;
+    position: relative;
+    margin: 0 auto;
+    animation: floatChar 3s ease-in-out infinite;
+    z-index: 5;
+}
+
+@keyframes floatChar {
+
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-10px) rotate(2deg);
+    }
+}
+
+.char-body {
+    fill: #FFD233;
+    transition: fill 2s ease-in-out;
+}
+
+.char-eye {
+    fill: #2D2D2D;
+    animation: blink 4s infinite;
+}
+
+.char-blush {
+    fill: #FF9E9E;
+    opacity: 0.6;
+}
+
+.char-mouth {
+    fill: none;
+    stroke: #2D2D2D;
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+.char-pale-effect {
+    fill: url(#pale-gradient);
+    transition: opacity 2s ease-in-out;
+}
+
+#sweat-drop {
+    transition: opacity 2s ease-in-out;
+}
+
+@keyframes blink {
+
+    0%,
+    96%,
+    100% {
+        transform: scaleY(1);
+    }
+
+    98% {
+        transform: scaleY(0.1);
+    }
+}
+
+/* Typography & Utilities */
+.fade-enter-active {
+    animation: fadeUp 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 220px;
+}
+
+/* Blue Filter Effect for Appetite Suppression */
+.appetite-killer {
+    filter: sepia(1) hue-rotate(190deg) saturate(3) contrast(1.2) brightness(0.8);
+    transition: filter 0.5s ease;
+}
+
+.appetite-killer-weak {
+    filter: sepia(0.5) hue-rotate(180deg) saturate(1.5);
+    transition: filter 0.5s ease;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* --- RIPPLE EFFECT --- */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.6);
+    width: 100px;
+    height: 100px;
+    margin-top: -50px;
+    margin-left: -50px;
+    animation: ripple 0.6s;
+    pointer-events: none;
+}
+
+/* --- POP BUTTONS --- */
+.btn-pop {
+    background-color: var(--accent-yellow);
+    color: var(--text-dark);
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 1rem 2rem;
+    border: none;
+    box-shadow: 0 4px 0 #E5BC2E;
+    transition: all 0.1s;
+    text-align: center;
+    width: 100%;
+    font-size: 1.1rem;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.btn-pop:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #E5BC2E;
+}
+
+/* --- BREATHING ANIMATION --- */
+@keyframes breatheScale {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
+
+    /* Inhale Phase (4 seconds) - 0% to 21% */
+    21% {
+        transform: scale(1.4);
+        opacity: 1;
+    }
+
+    /* Hold Phase (7 seconds) - 21% to 58% */
+    25% {
+        transform: scale(1.38);
+    }
+
+    29% {
+        transform: scale(1.4);
+    }
+
+    33% {
+        transform: scale(1.38);
+    }
+
+    37% {
+        transform: scale(1.4);
+    }
+
+    41% {
+        transform: scale(1.38);
+    }
+
+    45% {
+        transform: scale(1.4);
+    }
+
+    49% {
+        transform: scale(1.38);
+    }
+
+    53% {
+        transform: scale(1.4);
+    }
+
+    58% {
+        transform: scale(1.4);
+        opacity: 1;
+    }
+
+    /* Exhale Phase (8 seconds) - 58% to 100% */
+    100% {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
+}
+
+.animate-breathe {
+    animation: breatheScale 19s infinite ease-in-out;
+}
+
+/* --- SECONDARY BUTTONS (Tool Cards) --- */
+.btn-secondary {
+    background-color: #FFFFFF;
+    color: var(--text-dark);
+    font-weight: 700;
+    border-radius: 1rem;
+    padding: 0.7rem 0.8rem;
+    transition: all 0.2s;
+    border: 1px solid #E2E8F0;
+    /* Cleaner 1px border */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    /* Subtler shadow */
+}
+
+.btn-secondary:hover {
+    border-color: #CBD5E1;
+    /* Darker on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.btn-secondary:active {
+    transform: scale(0.98);
+    background-color: #F8FAFC;
+}
+
+.btn-secondary .icon-box {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.btn-blue .icon-box {
+    background-color: #E0F2FE;
+    color: #0284C7;
+}
+
+.btn-green .icon-box {
+    background-color: #DCFCE7;
+    color: #16A34A;
+}
+
+.btn-yellow .icon-box {
+    background-color: #FEF9C3;
+    color: #CA8A04;
+}
+
+.btn-purple .icon-box {
+    background-color: #F3E8FF;
+    color: #9333EA;
+}
+
+.title-pop {
+    font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    font-weight: 900;
+    color: var(--text-dark);
+    letter-spacing: -0.02em;
+}
+
+/* --- UTILITIES --- */
+.hidden {
+    display: none !important;
+}
+
+.hidden-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hidden-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Rolling Text Animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(-30px);
+        opacity: 0;
+    }
+}
+
+.animate-slideInRight {
+    animation: slideInRight 0.5s ease-out forwards;
+}
+
+.animate-slideOutLeft {
+    animation: slideOutLeft 0.5s ease-in forwards;
+}
+
+/* Custom Button Styling */
+.btn-restart-custom {
+    padding-top: 0.3rem !important;
+    padding-bottom: 0.3rem !important;
+}
+
+.btn-restart-custom .text-base {
+    font-size: 1.25rem !important;
+    color: #385dff !important;
+}

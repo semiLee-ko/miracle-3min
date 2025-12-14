@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>식욕 억제 뽁뽁이</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 40px 0 0 0;
+            /* Top padding */
+            width: 100%;
+            height: 100%;
+            background-color: #f0f2f5;
+            font-family: 'Noto Sans KR', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            /* Start from top instead of center */
+            overflow: auto;
+            /* Allow scrolling if content overflows */
+            /* touch-action: none; Removed to allow scrolling */
+            box-sizing: border-box;
+            /* Handle padding */
+        }
+
+        h2 {
+            color: #333;
+            margin: 10px 0 20px 0;
+            text-align: center;
+            font-size: 1.2rem;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .bubble-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            /* Ensure rows are distributed */
+            /* 5열 */
+            gap: 10px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+
+            /* Responsive Sizing (Portrait Default) */
+            width: 85vw;
+            /* Match width in portrait */
+            max-width: 400px;
+            /* Cap size */
+            aspect-ratio: 1 / 1;
+            /* Keep square */
+            height: auto;
+
+            margin-top: 0;
+            /* Handled by body padding */
+            margin-bottom: 20px;
+
+            touch-action: manipulation;
+            box-sizing: border-box;
+            /* Include padding in size */
+        }
+
+        /* 뽁뽁이 버튼 스타일 */
+        .bubble {
+            width: 100%;
+            /* Fill grid cell */
+            height: 100%;
+            /* Fill grid cell */
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(200, 230, 255, 0.4));
+            box-shadow:
+                inset 0 0 10px rgba(255, 255, 255, 0.8),
+                3px 3px 6px rgba(0, 0, 0, 0.1),
+                inset -2px -2px 5px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(200, 230, 255, 0.8);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 터진 상태 */
+        .bubble.popped {
+            background: rgba(230, 230, 230, 0.3);
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
+            transform: scale(0.9);
+            border: 1px solid rgba(200, 200, 200, 0.3);
+        }
+
+        /* 터질 때 나오는 텍스트 */
+        .pop-text {
+            position: absolute;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-align: center;
+            width: 100px;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        /* 텍스트 애니메이션 */
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+
+            30% {
+                transform: translateY(-10px) scale(1.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-30px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .animate-pop {
+            animation: floatUp 0.8s ease-out forwards;
+        }
+
+        /* Retry Overlay Style */
+        .game-over-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 20;
+            backdrop-filter: blur(2px);
+        }
+
+        .game-over-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .retry-btn-styled {
+            width: 60px;
+            height: 60px;
+            background-color: #3182f6;
+            /* Toss Blue */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(49, 130, 246, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .retry-btn-styled:active {
+            transform: scale(0.92);
+            box-shadow: 0 2px 6px rgba(49, 130, 246, 0.3);
+        }
+
+        .retry-btn-styled svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+            stroke-width: 2.5;
+        }
+
+        /* 진행률 바 */
+        .progress-bar {
+            width: 80%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #ff9f43;
+            transition: width 0.3s;
+        }
+
+        .ui-panel {
+            width: 85vw;
+            /* Match bubble container width */
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Landscape Adjustment */
+        @media (max-height: 500px) {
+            body {
+                flex-direction: row;
+                justify-content: space-evenly;
+                align-items: center;
+                gap: 0;
+                padding: 10px;
+                box-sizing: border-box;
+                overflow: hidden;
+                /* Prevent scroll in game */
+            }
+
+            h2 {
+                display: none;
+            }
+
+            .bubble-container {
+                flex: none;
+                /* Use min() to ensure it fits both height and half-width */
+                width: min(90vh, 45vw);
+                height: min(90vh, 45vw);
+                aspect-ratio: 1 / 1;
+                max-width: none;
+
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                grid-template-rows: repeat(5, 1fr);
+                justify-content: center;
+                align-content: center;
+                transform: none;
+                margin: 0;
+                padding: 10px;
+                gap: 5px;
+            }
+
+            .ui-panel {
+                flex: none;
+                width: 45%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: auto;
+                max-width: 300px;
+            }
+
+            .bubble {
+                width: 100%;
+                height: 100%;
+            }
+
+            .pop-text {
+                font-size: 0.7rem;
+                width: 80px;
+            }
+
+            .progress-bar {
+                width: 100%;
+                margin-top: 0;
+                margin-bottom: 20px;
+            }
+
+            .status-text {
+                margin-bottom: 20px;
+                font-size: 1rem;
+            }
+
+            .retry-btn-styled {
+                width: 50px;
+                height: 50px;
+            }
+
+            .retry-btn-styled svg {
+                width: 24px;
+                height: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bubble-container" id="grid">
+        <!-- 자바스크립트로 뽁뽁이 생성 -->
+
+        <!-- Game Over Overlay -->
+        <div class="game-over-overlay" id="gameOverOverlay">
+            <div class="retry-btn-styled" onclick="resetBubbles()">
+                <!-- SVG Retry Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6"></path>
+                    <path d="M2.5 22v-6h6"></path>
+                    <path d="M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8"></path>
+                    <path d="M22 12.5a10 10 0 0 1-18.8 4.2L2.5 16"></path>
+                </svg>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="ui-panel">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const progressBar = document.getElementById('progress');
+        const gameOverOverlay = document.getElementById('gameOverOverlay');
+
+        const rows = 5;
+        const cols = 5;
+        const totalBubbles = rows * cols;
+        let poppedCount = 0;
+
+        // 팩폭 멘트 리스트 (랜덤 출력)
+        const messages = [
+            "배달비 굳음", "살 안찜", "피부 좋아짐", "붓기 빠짐",
+            "통장 지킴", "건강 챙김", "승리자", "참은 자",
+            "지방 분해", "위장 휴식", "꿀잠 예약", "내일 가볍다",
+            "치킨값 저금", "야식 끊기", "디톡스", "칭찬해"
+        ];
+
+        // Haptic Helper
+        function triggerHaptic(type) {
+            try {
+                const bedrock = window.Bedrock || window.parent.Bedrock;
+                if (bedrock && bedrock.generateHapticFeedback) {
+                    bedrock.generateHapticFeedback({ type: type });
+                }
+            } catch (e) {
+                console.log("Haptic error:", e);
+            }
+        }
+
+        function createBubbles() {
+            // Remove old bubbles (keeping the overlay which is last child or we re-append it)
+            // Safer to clear all and re-append overlay
+            grid.innerHTML = '';
+
+            // Re-create overlay (since we cleared it) or create fresh bubbles then append cached overlay?
+            // Actually, innerHTML='' destroys the overlay element reference if it was inside.
+            // But we have `gameOverOverlay` variable. If we remove it from DOM, the var still holds it? Yes.
+            // So we can re-append it.
+
+            for (let i = 0; i < totalBubbles; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                bubble.dataset.index = i;
+                bubble.addEventListener('touchstart', handlePop, { passive: false });
+                bubble.addEventListener('mousedown', handlePop);
+                grid.appendChild(bubble);
+            }
+
+            // Append Overlay Last (so it sits on top)
+            if (gameOverOverlay) grid.appendChild(gameOverOverlay);
+
+            poppedCount = 0;
+            updateProgress();
+        }
+
+        function handlePop(e) {
+            // Fix: Check cancelable before preventing default to avoid Chrome intervention warning
+            if (e.cancelable) {
+                e.preventDefault();
+            }
+            const bubble = e.currentTarget;
+
+            if (bubble.classList.contains('popped')) return;
+
+            // 터짐 처리
+            bubble.classList.add('popped');
+
+            // 진동 효과
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+            // Haptic: Pop
+            triggerHaptic('tap');
+
+            // 텍스트 효과 생성
+            showPopText(bubble);
+
+            // 카운트 증가
+            poppedCount++;
+            updateProgress();
+
+            // 다 터뜨렸을 때
+            checkWin();
+        }
+
+        function showPopText(target) {
+            const text = document.createElement('div');
+            text.classList.add('pop-text', 'animate-pop');
+
+            // 랜덤 멘트
+            text.innerText = messages[Math.floor(Math.random() * messages.length)];
+
+            // 뽁뽁이 중앙에 배치
+            target.appendChild(text);
+
+            // 애니메이션 끝나면 제거
+            setTimeout(() => {
+                text.remove();
+            }, 800);
+        }
+
+        function checkWin() {
+            if (poppedCount >= totalBubbles) {
+                // Haptic: Success
+                triggerHaptic('success');
+
+                // Show Success Overlay
+                setTimeout(() => {
+                    if (gameOverOverlay) gameOverOverlay.classList.add('active');
+                }, 300);
+            }
+        }
+
+        function updateProgress() {
+            const percent = (poppedCount / totalBubbles) * 100;
+            document.querySelector('.progress-fill').style.width = `${percent}%`;
+        }
+
+        function resetBubbles() {
+            gameOverOverlay.classList.remove('active'); // Hide overlay
+
+            const bubbles = grid.querySelectorAll('.bubble');
+
+            // 리셋 애니메이션 (순차적으로 복구)
+            bubbles.forEach((b, idx) => {
+                setTimeout(() => {
+                    b.classList.remove('popped');
+                    // 내부 텍스트 제거
+                    const oldText = b.querySelector('.pop-text');
+                    if (oldText) oldText.remove();
+                }, idx * 10);
+            });
+
+            poppedCount = 0;
+            updateProgress();
+        }
+
+        // 초기화
+        createBubbles();
+
+    </script>
+</body>
+
+</html>
