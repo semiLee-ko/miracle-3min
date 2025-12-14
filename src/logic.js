@@ -22,7 +22,6 @@ export const quotes = [
     "역류성 식도염이 현관문 두드리고 있습니다.<br>열어주시겠습니까?",
     "야식은 간이 쉴 시간을 뺏는<br>노동착취입니다.",
     "치킨 값 3만 원 시대,<br>이 돈이면 주식 1주를 산다.",
-    "냄비 물 올리기 전에 생각해보자.<br>김치만 먹어도 짤 텐데.",
     "떠나간 배달비는 돌아오지 않습니다.<br>마치 당신의 월급처럼.<br>(- 텅장 씀)",
     "행복은 배달 오는 것이 아니라,<br>통장에 머무는 것입니다.<br>(- 자본주의)",
     "사람은 배신해도,<br>뱃살은 주인을 배신하지 않더군요.<br>(- 체지방)",
@@ -31,7 +30,12 @@ export const quotes = [
     "식욕은 순간이지만,<br>카드 할부는 영원합니다.",
     "인류는 걷지 않기 위해 배달앱을 만들었습니다.<br>그리고 당신은 지금 그 정점에 서 있습니다.",
     "당신의 주말은 48시간인데,<br>잠옷은 48시간째 주말을 기념하고 있습니다.",
-    "주말에 당신의 칼로리는,<br>휴대폰 화면 스크롤과 리모컨 버튼 누르는 데 전부 썼습니다."
+    "주말에 당신의 칼로리는,<br>휴대폰 화면 스크롤과 리모컨 버튼 누르는 데 전부 썼습니다.",
+    "혼자 먹는데<br>2~3인분은 왜 기본값일까.",
+    "스트레스 해소용이었는데<br>스트레스가 더 늘어났어요.",
+    "이 정도면 괜찮다는 말,<br>오늘만 세 번째입니다.",
+    "카드 명세서는<br>나보다 나를 잘 안다.",
+    "최소 주문 금액을 채우기 위해<br>필요 없는 것을 추가하는 당신의 모습,<br>마케팅 교과서에 실려야 합니다."
 ];
 
 export const appState = {
@@ -162,14 +166,20 @@ export const appLogic = {
                 startBtn.classList.remove('opacity-0');
             }
         }, 1500);
-        // One-time DB Reset (Requested by user)
-        if (!localStorage.getItem('dbResetDone_v1')) {
-            await resetUserData();
-            localStorage.setItem('dbResetDone_v1', 'true');
-            // Reset local savings display immediately
-            appState.totalSavings = 0;
-            document.getElementById('total-savings-display').innerText = "0";
-            appLogic.showCustomAlert("데이터가 초기화되었습니다.");
+        // Bind Reset Data Button (in Help Modal)
+        const btnReset = document.getElementById('btn-reset-data');
+        if (btnReset) {
+            btnReset.addEventListener('click', async () => {
+                if (confirm("정말 모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
+                    await resetUserData();
+                    // Reset local display
+                    appState.totalSavings = 0;
+                    document.getElementById('total-savings-display').innerText = "0";
+                    appLogic.showCustomAlert("데이터가 초기화되었습니다.");
+                    // Close help modal
+                    document.getElementById('help-modal')?.classList.add('hidden');
+                }
+            });
         }
     },
 

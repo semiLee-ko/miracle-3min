@@ -91,7 +91,7 @@
         </div>
 
         <!-- HEADER -->
-        <header class="absolute top-0 w-full p-6 flex justify-between items-start z-20 text-white pointer-events-none">
+        <header class="absolute top-0 w-full p-6 flex justify-between items-start z-50 text-white pointer-events-none">
             <div class="flex items-center gap-2 mt-1 pointer-events-auto">
                 <span class="font-black text-xl tracking-tighter text-white drop-shadow-md italic">
                     침착해<span class="text-yellow-300">3분</span>
@@ -477,7 +477,7 @@
                         <p class="font-bold text-gray-800">🛠️ 위기 탈출 도구</p>
                         <ul class="list-disc pl-4 space-y-1 text-xs">
                             <li><span class="text-[#5B4DFF] font-bold">식욕 감퇴짤</span>: 입맛 뚝 떨어지는 파란 필터</li>
-                            <li><span class="text-green-600 font-bold">멍때리기</span>: 아무 생각 없이 즐기는 미니 게임</li>
+                            <li><span class="text-green-600 font-bold">멍때리기</span>: 아무 생각 없이 시간 떼우기</li>
                             <li><span class="text-orange-500 font-bold">금융 치료</span>: 이 돈이면 살 수 있는 것들 비교</li>
                             <li><span class="text-purple-600 font-bold">심호흡</span>: 4-7-8 호흡법으로 진정하기</li>
                         </ul>
@@ -487,8 +487,13 @@
                         💡 <b>Tip:</b> 하루 5번 성공하면 보상형 광고를 시청하고 계속 기록할 수 있어요!
                     </div>
                 </div>
+                <button id="btn-reset-data"
+                    class="mt-4 bg-red-100 text-red-500 py-3 rounded-xl font-bold text-sm hover:bg-red-200 active:scale-[0.98] transition-all w-full shrink-0">
+                    데이터 초기화 (테스트용)
+                </button>
+
                 <button id="btn-close-help"
-                    class="mt-6 bg-gray-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-[0.98] transition-transform w-full shrink-0">
+                    class="mt-2 bg-gray-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-[0.98] transition-transform w-full shrink-0">
                     알겠어요!
                 </button>
             </div>
