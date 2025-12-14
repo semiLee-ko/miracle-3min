@@ -162,13 +162,15 @@ export const appLogic = {
                 startBtn.classList.remove('opacity-0');
             }
         }, 1500);
-        // One-time Mock Data Injection for Demo
+        // One-time Mock Data Injection (Disabled by user request)
+        /*
         if (!localStorage.getItem('mockDataInjected')) {
             console.log("💉 Force Injecting Mock Data...");
             injectMockData().then(() => {
                 localStorage.setItem('mockDataInjected', 'true');
             });
         }
+        */
     },
 
     checkDailyLimit: () => {
