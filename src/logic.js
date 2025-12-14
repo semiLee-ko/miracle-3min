@@ -163,13 +163,12 @@ export const appLogic = {
             }
         }, 1500);
         // One-time Mock Data Injection for Demo
-        // One-time Mock Data Injection (FORCED for Demo)
-        // if (!localStorage.getItem('mockDataInjected')) {
-        console.log("💉 Force Injecting Mock Data...");
-        injectMockData().then(() => {
-            localStorage.setItem('mockDataInjected', 'true');
-        });
-        // }
+        if (!localStorage.getItem('mockDataInjected')) {
+            console.log("💉 Force Injecting Mock Data...");
+            injectMockData().then(() => {
+                localStorage.setItem('mockDataInjected', 'true');
+            });
+        }
     },
 
     checkDailyLimit: () => {
