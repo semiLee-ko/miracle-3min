@@ -19,47 +19,29 @@ async function initApp() {
         // --- Toss Login Flow (BEFORE Firebase init) ---
         let tossLoginSuccess = false;
         try {
-
+            const loginResult = await appLogin();
 
             if (loginResult && loginResult.authorizationCode) {
-
-
-
-
                 // Import Firebase modules
                 const { auth, functions } = await import('./firebase.js');
                 const { httpsCallable } = await import('firebase/functions');
                 const { signInWithCustomToken } = await import('firebase/auth');
 
-
-
-
-
+                const tossLogin = httpsCallable(functions, 'tossLogin');
 
                 const result = await tossLogin({
                     authorizationCode: loginResult.authorizationCode,
                     referrer: loginResult.referrer
                 });
 
-
-
-
                 // Sign in to Firebase with custom token
-                await signInWithCustomToken(auth, result.data.token);
-
-
-
-
-                tossLoginSuccess = true;
-            } else {
-
+                if (result.data && result.data.token) {
+                    await signInWithCustomToken(auth, result.data.token);
+                    tossLoginSuccess = true;
+                }
             }
         } catch (e) {
             console.warn('⚠️ Toss Login Skipped/Failed:', e);
-            console.error('Error details:', e);
-            console.error('Error code:', e.code);
-            console.error('Error message:', e.message);
-            console.error('Error details:', e.details);
         }
 
         // Initialize Firebase (will use existing auth if Toss login succeeded)

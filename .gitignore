@@ -139,3 +139,9 @@ Thumbs.db
 .firebase/
 firebase-debug.log
 .gemini/
+
+# Sensitive Certificates and Private Keys
+functions/certs/
+*.key
+*.crt
+*.pem

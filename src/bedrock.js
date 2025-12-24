@@ -338,26 +338,22 @@ export async function showAppsInTossAdMob(params) {
 }
 
 export async function appLogin() {
-
     // 1. Try Framework (only if available)
     try {
         // Check if framework is actually loaded
         if (typeof frameworkAppLogin === 'function') {
-
+            const result = await frameworkAppLogin();
             return result;
-        } else {
-
         }
     } catch (e) {
         console.warn('⚠️ Framework Login check failed:', e);
     }
 
     // 2. Mock (for local development & sandbox)
-
-    return Promise.resolve({
+    return {
         authorizationCode: 'mock_auth_code_' + Date.now(),
         referrer: 'local_dev'
-    });
+    };
 }
 
 export async function fetchAlbumPhotos(options) {
