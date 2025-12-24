@@ -20,15 +20,11 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const functions = getFunctions(app, 'asia-northeast3'); // Seoul region
 
-let currentUser = null;
-
 // Initialize and Sign In Anonymously
 export const initFirebase = () => {
     return new Promise((resolve, reject) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                currentUser = user;
-
                 unsubscribe();
                 resolve(user);
             } else {
@@ -43,9 +39,10 @@ export const initFirebase = () => {
 
 // Save Game Record (Increment Success & Money + Add History)
 export const saveRecord = async (savedMoney, calories) => {
-    if (!currentUser) return;
+    const user = auth.currentUser;
+    if (!user) return;
 
-    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", user.uid);
     const historyRef = collection(userRef, "history");
 
     try {
@@ -70,8 +67,9 @@ export const saveRecord = async (savedMoney, calories) => {
 
 // Get Total Savings
 export const getTotalSavings = async () => {
-    if (!currentUser) return 0;
-    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
+    const user = auth.currentUser;
+    if (!user) return 0;
+    const userRef = doc(db, "miracle-3min-users", user.uid);
     try {
         const snap = await getDoc(userRef);
         if (snap.exists()) {
@@ -86,8 +84,9 @@ export const getTotalSavings = async () => {
 
 // Get Success Count
 export const getSuccessCount = async () => {
-    if (!currentUser) return 0;
-    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
+    const user = auth.currentUser;
+    if (!user) return 0;
+    const userRef = doc(db, "miracle-3min-users", user.uid);
     try {
         const snap = await getDoc(userRef);
         if (snap.exists()) {
@@ -102,8 +101,9 @@ export const getSuccessCount = async () => {
 
 // Inject Mock Data (Run once to seed data for charts)
 export const injectMockData = async () => {
-    if (!currentUser) return;
-    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
+    const user = auth.currentUser;
+    if (!user) return;
+    const userRef = doc(db, "miracle-3min-users", user.uid);
     const historyRef = collection(userRef, "history");
 
     // 3 weeks ago (approx)
@@ -123,9 +123,10 @@ export const injectMockData = async () => {
 
 // Get Monthly Stats (Current Calendar Month)
 export const getMonthlyStats = async () => {
-    if (!currentUser) return 0;
+    const user = auth.currentUser;
+    if (!user) return 0;
 
-    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", user.uid);
     const historyRef = collection(userRef, "history");
 
     // Get First Day of Current Month
@@ -149,9 +150,10 @@ export const getMonthlyStats = async () => {
 
 // Get Weekly Stats (Last 4 Calendar Weeks: Mon-Sun)
 export const getWeeklyStats = async () => {
-    if (!currentUser) return [0, 0, 0, 0];
+    const user = auth.currentUser;
+    if (!user) return [0, 0, 0, 0];
 
-    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", user.uid);
     const historyRef = collection(userRef, "history");
 
     // Helper: Get Monday of the week for a given date
@@ -212,8 +214,9 @@ export const getWeeklyStats = async () => {
 
 // Get Today's Success Count
 export const getTodaySuccessCount = async () => {
-    if (!currentUser) return 0;
-    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
+    const user = auth.currentUser;
+    if (!user) return 0;
+    const userRef = doc(db, "miracle-3min-users", user.uid);
     const historyRef = collection(userRef, "history");
 
     // Start of Today
@@ -233,8 +236,9 @@ export const getTodaySuccessCount = async () => {
 
 // Reset User Data (Clear History & Aggregates)
 export const resetUserData = async () => {
-    if (!currentUser) return;
-    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
+    const user = auth.currentUser;
+    if (!user) return;
+    const userRef = doc(db, "miracle-3min-users", user.uid);
     const historyRef = collection(userRef, "history");
 
     try {

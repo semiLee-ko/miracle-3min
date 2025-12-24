@@ -35,6 +35,7 @@ export async function prepareInterstitialAd() {
         }
 
         const cleanup = GoogleAdMob.loadAppsInTossAdMob({
+            //options: { adGroupId: 'ait.v2.live.35a5357d08ca409f' },
             options: { adGroupId: 'ait-ad-test-interstitial-id' },
             onEvent: (event) => {
                 if (event.type === 'loaded') {
@@ -104,6 +105,7 @@ export function showInterstitialAd() {
 
 
             GoogleAdMob.showAppsInTossAdMob({
+                //options: { adGroupId: 'ait.v2.live.35a5357d08ca409f' },
                 options: { adGroupId: 'ait-ad-test-interstitial-id' },
                 onEvent: (event) => {
 
@@ -150,6 +152,7 @@ export async function prepareRewardedAd() {
         }
 
         const cleanup = GoogleAdMob.loadAppsInTossAdMob({
+            //options: { adGroupId: 'ait.v2.live.1285567918504cc7' },
             options: { adGroupId: 'ait-ad-test-rewarded-id' },
             onEvent: (event) => {
                 if (event.type === 'loaded') {
@@ -190,6 +193,7 @@ export function showRewardedAd() {
 
 
             GoogleAdMob.showAppsInTossAdMob({
+                //options: { adGroupId: 'ait.v2.live.1285567918504cc7' },
                 options: { adGroupId: 'ait-ad-test-rewarded-id' },
                 onEvent: (event) => {
 
@@ -230,11 +234,14 @@ export function showRewardedAd() {
 export async function loadAppsInTossAdMob(params) {
 
 
-    // Map internal types to Test Ad IDs
-    let adGroupId = 'ait-ad-test-interstitial-id';
+    // Map internal types to Live Ad IDs
+    //let adGroupId = 'ait.v2.live.35a5357d08ca409f'; // Interstitial
+    let adGroupId = 'ait-ad-test-interstitial-id'; // Interstitial
     if (params?.type === 'REWARDED') {
+        //adGroupId = 'ait.v2.live.1285567918504cc7';
         adGroupId = 'ait-ad-test-rewarded-id';
     } else if (params?.type === 'INTERSTITIAL') {
+        //adGroupId = 'ait.v2.live.35a5357d08ca409f';
         adGroupId = 'ait-ad-test-interstitial-id';
     }
 
