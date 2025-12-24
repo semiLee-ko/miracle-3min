@@ -1,3 +1,7 @@
+html {
+    font-size: 17px;
+}
+
 body {
     font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     background-color: #f3f4f6;
@@ -5,8 +9,14 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    min-height: 100dvh;
+    /* iOS dynamic viewport height (keyboard fix) */
+    height: 100vh;
+    height: 100dvh;
     margin: 0;
     overflow: hidden;
+    touch-action: manipulation;
+    /* Prevent double-tap zoom globally */
 }
 
 /* --- THEME COLORS --- */
@@ -46,6 +56,11 @@ body {
     border-radius: 50%;
     animation: floatParticle infinite linear;
     bottom: -30px;
+    touch-action: manipulation;
+    /* Prevent double-tap zoom on iPhone */
+    cursor: pointer;
+    pointer-events: auto;
+    /* Override parent's none - CRITICAL for iOS! */
 }
 
 @keyframes floatParticle {

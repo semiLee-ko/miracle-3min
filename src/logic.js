@@ -1,41 +1,40 @@
 // Core Application Logic
-import { saveRecord, getTotalSavings, getSuccessCount, getWeeklyStats, injectMockData, getMonthlyStats, getTodaySuccessCount, resetUserData } from './firebase.js';
+import { saveRecord, getTotalSavings, getSuccessCount, getWeeklyStats, injectMockData, getMonthlyStats, getTodaySuccessCount } from './firebase.js';
 
 export const quotes = [
-    "오늘 먹을 치킨을 내일로 미루면,<br>통장 잔고가 웃는다.",
-    "당신의 위장은 사실<br>아무 말도 하지 않았습니다.",
-    "지금 그 배고픔,<br>물 한 잔이면 사라질 거짓말.",
-    "당신의 뱃살은 이미<br>충분히 권위 있습니다.",
-    "야식은 내일 아침<br>얼굴 붓기로 보답합니다.",
-    "배달비 모았으면,<br>이미 에어팟 샀다.",
-    "최소주문금액 맞추다,<br>최대몸무게 맞춘다.",
-    "클릭 한 번에 3만 원 순삭!<br>마술이 따로 없네.",
-    "치킨은 죄가 없어요.<br>주문한 손가락이 유죄.",
-    "지금 그 식욕,<br>수분 부족이 보낸<br>스팸 메시지입니다.",
-    "뇌: '당 땡겨',<br>위장: '난 꽉 찼는데?'<br>합의 좀 하시죠.",
-    "냉장고 속 계란이랑 두부가<br>서운해하고 있어.",
-    "일회용 수저 안 받기 체크하면 뭐해,<br>플라스틱 용기가 산더미인데.",
-    "배달앱 VIP 등급,<br>이력서엔 못 씁니다.",
-    "또 속냐,<br>그 가짜 배고픔에.",
+    "오늘 먹을 치킨을 내일로 미루면,<br>통장 잔고가 웃어요.",
+    "위장은 사실<br>아무 말도 안 했어요.",
+    "지금 그 배고픔,<br>물 한 잔이면 사라지는 거짓말.",
+    "뱃살은 이미<br>충분히 권위가 넘쳐요.",
+    "야식은 내일 아침<br>얼굴 붓기로 보답해요.",
+    "배달비 모았으면,<br>이미 에어팟 샀을걸요?",
+    "최소주문금액 맞추다,<br>최대 몸무게 찍을지도 몰라요.",
+    "클릭 한 번에 3만 원 순삭!<br>마술이 따로 없어요.",
+    "치킨은 죄가 없어요.<br>주문 버튼이 문제예요.",
+    "지금 그 식욕,<br>수분 부족이 보낸<br>스팸 메시지예요.",
+    "뇌: '당 땡겨',<br>위장: '난 꽉 찼는데?'<br>합의가 필요해요.",
+    "냉장고 속 계란이랑 두부가<br>서운해하고 있어요.",
+    "일회용 수저 안 받기 체크하면 뭐해요,<br>플라스틱 용기가 산더미인걸요.",
+    "배달앱 VIP 등급,<br>이력서엔 못 써요.",
+    "또 속고 있나요?<br>그 가짜 배고픔에.",
     "지금 느끼는 행복 30분,<br>내일 아침 후회 24시간.",
-    "니가 잠든 사이에...<br>위장은 밤새도록 야근 중.",
-    "역류성 식도염이 현관문 두드리고 있습니다.<br>열어주시겠습니까?",
-    "야식은 간이 쉴 시간을 뺏는<br>노동착취입니다.",
-    "치킨 값 3만 원 시대,<br>이 돈이면 주식 1주를 산다.",
-    "떠나간 배달비는 돌아오지 않습니다.<br>마치 당신의 월급처럼.<br>(- 텅장 씀)",
-    "행복은 배달 오는 것이 아니라,<br>통장에 머무는 것입니다.<br>(- 자본주의)",
-    "사람은 배신해도,<br>뱃살은 주인을 배신하지 않더군요.<br>(- 체지방)",
-    "밤은 깊어가고,<br>당신의 붓기는 내일 아침 떠오르겠죠.<br>(- 야식)",
-    "위장은 비울수록 아름답고,<br>통장은 채울수록 빛납니다.<br>(- 무소유? 아니 풀소유)",
-    "식욕은 순간이지만,<br>카드 할부는 영원합니다.",
-    "인류는 걷지 않기 위해 배달앱을 만들었습니다.<br>그리고 당신은 지금 그 정점에 서 있습니다.",
-    "당신의 주말은 48시간인데,<br>잠옷은 48시간째 주말을 기념하고 있습니다.",
-    "주말에 당신의 칼로리는,<br>휴대폰 화면 스크롤과 리모컨 버튼 누르는 데 전부 썼습니다.",
-    "혼자 먹는데<br>2~3인분은 왜 기본값일까.",
+    "당신이 잠든 사이에...<br>위장은 밤새 야근 중이에요.",
+    "역류성 식도염이 문을 두드리고 있어요.<br>열어줄 건가요?",
+    "야식은 간이 쉴 시간을 뺏는<br>노동 착취예요.",
+    "치킨 값 3만 원 시대,<br>이 돈이면 주식 1주를 살 수 있어요.",
+    "떠나간 배달비는 돌아오지 않아요.<br>내 월급처럼요.<br>(- 텅장 씀)",
+    "행복은 배달 오는 게 아니라,<br>통장에 머무는 거예요.<br>(- 자본주의)",
+    "사람은 배신해도,<br>뱃살은 절대 배신하지 않아요.<br>(- 체지방)",
+    "밤은 깊어가고,<br>내일 아침 얼굴은 둥실 떠오르겠죠.<br>(- 야식)",
+    "위장은 비울수록 아름답고,<br>통장은 채울수록 빛나요.<br>(- 무소유? 아니 풀소유)",
+    "식욕은 순간이지만,<br>카드 할부는 영원해요.",
+    "사람은 걷지 않으려고 배달앱을 만들었죠.<br>혹시 지금 그 정점에 서 있나요?",
+    "주말은 48시간인데,<br>잠옷은 48시간째 그대로네요.",
+    "주말 칼로리, 혹시 스크롤 내리는 데<br>다 썼나요?",
+    "혼자 먹는데<br>2~3인분은 왜 기본값일까요.",
     "스트레스 해소용이었는데<br>스트레스가 더 늘어났어요.",
-    "이 정도면 괜찮다는 말,<br>오늘만 세 번째입니다.",
-    "카드 명세서는<br>나보다 나를 잘 안다.",
-    "최소 주문 금액을 채우기 위해<br>필요 없는 것을 추가하는 당신의 모습,<br>마케팅 교과서에 실려야 합니다."
+    "이 정도면 괜찮다는 말,<br>오늘만 세 번째예요.",
+    "카드 명세서는<br>나보다 나를 더 잘 알아요."
 ];
 
 export const appState = {
@@ -48,11 +47,32 @@ export const appState = {
     breathInterval: null,
     breathTimeout1: null,
     breathTimeout2: null,
-    rollerInterval: null
+    rollerInterval: null,
+    activeGameModule: null // Track active game module for cleanup
 };
 
 export const appLogic = {
     init: async () => {
+        // Fix for Mobile Keyboard: Hide Tool Panel when Input is Focused
+        const savingsInputRef = document.getElementById('savings-input');
+        const mainCard = document.querySelector('#main-screen .main-card');
+
+        if (savingsInputRef && mainCard) {
+            savingsInputRef.addEventListener('focus', () => {
+                // Hide the tool panel to give space for the keyboard
+                mainCard.classList.add('hidden');
+                // Scroll to top/center to ensure input is visible if needed
+                setTimeout(() => {
+                    savingsInputRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            });
+
+            savingsInputRef.addEventListener('blur', () => {
+                // Restore the tool panel
+                mainCard.classList.remove('hidden');
+            });
+        }
+
         try {
             // Use getMonthlyStats for "This Month's Savings" header
             appState.totalSavings = await getMonthlyStats();
@@ -166,33 +186,45 @@ export const appLogic = {
                 startBtn.classList.remove('opacity-0');
             }
         }, 1500);
-        // Bind Reset Data Button (in Help Modal)
-        const btnReset = document.getElementById('btn-reset-data');
-        if (btnReset) {
-            btnReset.addEventListener('click', async () => {
-                if (confirm("정말 모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
-                    await resetUserData();
-                    // Reset local display
-                    appState.totalSavings = 0;
-                    document.getElementById('total-savings-display').innerText = "0";
-                    appLogic.showCustomAlert("데이터가 초기화되었습니다.");
-                    // Close help modal
-                    document.getElementById('help-modal')?.classList.add('hidden');
-                }
-            });
-        }
+
     },
 
-    checkDailyLimit: () => {
-        const today = new Date().toISOString().split('T')[0];
-        const key = `daily_success_${today}`;
-        const count = parseInt(localStorage.getItem(key) || '0');
+    checkDailyLimit: async () => {
+        const { getTodaySuccessCount } = await import('./firebase.js');
+        const { showInterstitialAd, showRewardedAd } = await import('./bedrock.js');
+
+        const count = await getTodaySuccessCount();
+
 
         if (count >= 5) {
-            appLogic.showCustomAlert("오늘의 인내심은 여기까지!\n하루 5번만 도전 가능해요.\n과유불급! 내일 다시 만나요 👋");
-            return false;
+            // Ask user if they want to watch rewarded ad
+            return new Promise((resolve) => {
+                appLogic.showCustomConfirm("기본 하루 5번까지만 도전 가능해요.\n광고를 보고 한 번 더 기록할까요?", async () => {
+                    // User confirmed - show rewarded ad
+                    try {
+
+                        const result = await showRewardedAd();
+                        // Only allow save if user earned reward
+                        resolve(result.rewarded);
+                    } catch (e) {
+                        console.error('Rewarded Ad Error:', e);
+                        resolve(false);
+                    }
+                }, () => {
+                    // User cancelled
+                    resolve(false);
+                });
+            });
+        } else {
+            // Under limit: Show Interstitial Ad
+            try {
+
+                await showInterstitialAd();
+            } catch (e) {
+                console.error('Ad Error:', e);
+            }
+            return true;
         }
-        return true;
     },
 
     incrementDailySuccess: () => {
@@ -260,10 +292,10 @@ export const appLogic = {
                 }, 400); // 0.4s sync with slideOut
             };
 
-            if (appState.timer === 179) updateStatus("괜찮아. 아직 배달앱 안켰어."); // Just after start
-            if (appState.timer === 120) updateStatus("진짜 배고픈 거 맞아?");
-            if (appState.timer === 60) updateStatus("집에 있는 것 부터 떠올려봐.");
-            if (appState.timer === 30) updateStatus("배달 시켜먹고 후회한 적 있지?");
+            if (appState.timer === 179) updateStatus("괜찮아요. 아직 배달앱 안켰어요."); // Just after start
+            if (appState.timer === 120) updateStatus("진짜 배고픈 거 맞아요?");
+            if (appState.timer === 60) updateStatus("집에 있는 것 부터 떠올려봐요.");
+            if (appState.timer === 30) updateStatus("배달 시켜먹고 후회한 적 있죠?");
 
             // Character State Changes
             const sweatDrop = document.getElementById('sweat-drop');
@@ -290,73 +322,90 @@ export const appLogic = {
 
     finishTimer: async () => {
         clearInterval(appState.timerInterval);
+
+        // --- 1. JUST Show Result Screen (No Auto-Save, No Auto-Ad) ---
+        // Ad and Save will be handled by the 'Record' button in main.js
+
+        // --- 2. Update UI (Result Screen) ---
         appState.screen = 'result';
 
-        // Temporarily update totalSavings for display only (not saved to DB yet)
-        appState.totalSavings += appState.sessionSavings;
+        // NOTE: We do NOT add sessionSavings to totalSavings yet.
+        // It's only added after the user successfully records it.
 
         const main = document.getElementById('main-screen');
         const result = document.getElementById('result-screen');
 
         if (main) {
             main.style.opacity = '0';
-            main.classList.add('hidden'); // Immediate hide after transition logic needed but for simplicity
+            main.classList.add('hidden');
         }
 
         setTimeout(() => {
             if (result) result.classList.remove('hidden');
+
+            // Show current total (without new session yet)
             document.getElementById('total-savings-display').innerText = appState.totalSavings.toLocaleString();
 
-            // Update Success Count - Get current count and display +1 temporarily
-            getSuccessCount().then(count => {
-                const el = document.getElementById('success-count-display');
-                if (el) el.innerText = count + 1; // +1 for current session (not saved yet)
+            // Using dynamic import instead of require logic
+            import('./firebase.js').then(({ getSuccessCount, getTodaySuccessCount, getWeeklyStats }) => {
+                // Success Count
+                getSuccessCount().then(count => {
+                    const el = document.getElementById('success-count-display');
+                    if (el) el.innerText = count;
+                });
+
+                // Today's Count
+                getTodaySuccessCount().then(c => {
+                    const el = document.getElementById('today-count-display');
+                    if (el) el.innerHTML = `오늘 참은 횟수 : <span class="text-yellow-300 font-extrabold text-lg">${c}</span>/5회`;
+                });
+
+                // Chart
+                getWeeklyStats().then(stats => {
+                    appLogic.renderChart(stats);
+                    const resultMoneyEl = document.getElementById('result-money');
+                    if (resultMoneyEl) {
+                        // Show current week's total (excluding current session)
+                        resultMoneyEl.innerText = stats[3].toLocaleString();
+                    }
+                });
             });
 
-            // Update Today's Count Display
-            getTodaySuccessCount().then(count => {
-                const el = document.getElementById('today-count-display');
-                if (el) {
-                    // Display current + 1 (this session)
-                    // If count is 4, it becomes 5/5
-                    const current = count + 1;
-                    el.innerHTML = `오늘 참은 횟수 : <span class="text-yellow-300 font-extrabold text-lg">${current}</span>/5회`;
-                }
-            });
-
-            // Update Chart with Real Data + current session
-            getWeeklyStats().then(stats => {
-                // Add current session to this week's total for display
-                const updatedStats = [...stats];
-                updatedStats[3] = (stats[3] || 0) + appState.sessionSavings;
-
-                appLogic.renderChart(updatedStats);
-
-                // Update "This week's saved money" display with current session included
-                const resultMoneyEl = document.getElementById('result-money');
-                if (resultMoneyEl) {
-                    resultMoneyEl.innerText = updatedStats[3].toLocaleString();
-                }
-            });
-
-            // Trigger Visual Effect
+            // Effect (Success Confetti)
             import('./effects.js').then(module => {
                 module.triggerSuccessEffect();
             });
+
         }, 500);
     },
 
-    openTool: (toolName) => {
+    openTool: async (toolName) => {
         appState.activeTool = toolName;
-        const modal = document.getElementById(`${toolName}-modal`);
+        const modal = document.getElementById(toolName === 'game' ? 'game-modal' : `${toolName}-modal`);
+
+        // Ensure modal exists
         if (modal) modal.classList.remove('hidden');
 
         if (toolName === 'game') {
-            const chillFrame = document.getElementById('chill-frame');
-            if (chillFrame) {
-                const randomType = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
-                chillFrame.setAttribute('scrolling', 'auto'); // Ensure scrolling is enabled if needed
-                chillFrame.src = `chill/type${randomType}.html`;
+            const container = document.getElementById('chill-container');
+            if (container) {
+                // Determine Random Game Type (1-5)
+                const randomType = Math.floor(Math.random() * 5) + 1;
+
+
+                try {
+                    // Dynamic Import
+                    const module = await import(`./chill/type${randomType}.js`);
+
+                    // Mount Game
+                    if (module && module.mount) {
+                        module.mount(container);
+                        appState.activeGameModule = module;
+                    }
+                } catch (e) {
+                    console.error("Failed to load game module:", e);
+                    container.innerHTML = `<div class="text-white p-4 text-center">게임 로딩 실패<br>${e.message}</div>`;
+                }
             }
         } else if (toolName === 'breathe') {
             appLogic.startBreathingGuide();
@@ -367,14 +416,28 @@ export const appLogic = {
 
     closeTool: (toolName) => {
         appState.activeTool = null;
+
+        // Handle Game Cleanup specifically
+        if (toolName === 'game') {
+            const modal = document.getElementById('game-modal');
+            if (modal) modal.classList.add('hidden');
+
+            // Unmount Module
+            if (appState.activeGameModule && appState.activeGameModule.unmount) {
+                appState.activeGameModule.unmount();
+                appState.activeGameModule = null;
+            }
+
+            // Clear Container
+            const container = document.getElementById('chill-container');
+            if (container) container.innerHTML = '';
+
+            return;
+        }
+
+        // Generic Modal Close
         const modal = document.getElementById(`${toolName}-modal`);
         if (modal) modal.classList.add('hidden');
-        if (toolName === 'game') {
-            const chillFrame = document.getElementById('chill-frame');
-            if (chillFrame) {
-                chillFrame.src = ''; // Stop content/sound
-            }
-        }
 
         if (toolName === 'breathe') appLogic.stopBreathingGuide();
         if (appState.rollerInterval) {
@@ -414,12 +477,11 @@ export const appLogic = {
         // Alternatives Data
         // Prices are approximate (KRW)
         const items = [
-            { name: "뜨아(커피)", price: 4500, unit: "잔" },
-            { name: "에어팟 프로", price: 359000, unit: "개" },
-            { name: "마라탕", price: 12000, unit: "그릇" },
-            { name: "영화 티켓", price: 15000, unit: "장" },
-            { name: "편의점 도시락", price: 5500, unit: "개" },
-            { name: "넷플릭스 (1달)", price: 17000, unit: "달" }
+            { name: "에어팟 프로", price: 359000, unit: "개 살" },
+            { name: "영화 티켓", price: 15000, unit: "장 살" },
+            { name: "삼각김밥", price: 1200, unit: "개 살" },
+            { name: "컵라면", price: 1100, unit: "개 살" },
+            { name: "넷플릭스", price: 17000, unit: "개월 구독할" }
         ];
 
         let index = 0;
@@ -437,7 +499,7 @@ export const appLogic = {
 
             setTimeout(() => {
                 // Change Text
-                rollerContent.innerHTML = `이 돈이면 <span class="text-[#5B4DFF] font-black text-lg">${item.name}</span><br><span class="text-black font-black text-xl">${count}</span>${item.unit} 가능! 😲`;
+                rollerContent.innerHTML = `이 돈이면 <span class="text-[#5B4DFF] font-black text-lg">${item.name}</span><br><span class="text-black font-black text-xl">${count}</span>${item.unit} 수 있어요!`;
 
                 // Animation: Slide In from Bottom
                 rollerContent.style.transition = 'none'; // Instant reset
@@ -466,21 +528,26 @@ export const appLogic = {
         }
     },
 
-    showCustomConfirm: (message, onConfirm) => {
+    showCustomConfirm: (message, onConfirm, onCancel) => {
         const modal = document.getElementById('confirm-modal');
         const msgEl = document.getElementById('confirm-message');
         const btnOk = document.getElementById('btn-ok-confirm');
+        const btnCancel = document.getElementById('btn-cancel-confirm');
 
         if (modal && msgEl && btnOk) {
             msgEl.innerText = message;
 
-            // Clean up old listener to avoid duplicates (naive approach)
-            // Ideally should use a named function or once:true if simple
-            // But here we might overwrite onclick for simplicity in this constraint
             btnOk.onclick = () => {
                 onConfirm();
                 modal.classList.add('hidden');
             };
+
+            if (btnCancel) {
+                btnCancel.onclick = () => {
+                    if (onCancel) onCancel();
+                    modal.classList.add('hidden');
+                };
+            }
 
             modal.classList.remove('hidden');
         }
@@ -551,44 +618,42 @@ export const appLogic = {
     },
 
     triggerAlbum: async () => {
-        // Check if running in Toss Bedrock Environment
-        if (window.Bedrock) {
-            try {
-                const photos = await window.Bedrock.fetchAlbumPhotos({
-                    maxCount: 1,
-                    base64: true
-                });
+        // Dynamically import to ensure module scope availability if called late
+        const { fetchAlbumPhotos } = await import('./bedrock.js');
 
-                if (photos && photos.length > 0) {
-                    const photo = photos[0];
-                    console.log('📸 Photo data:', photo);
-                    let imageUri;
+        try {
+            const photos = await fetchAlbumPhotos({
+                maxCount: 1,
+                base64: true
+            });
 
-                    // Check if legitimate URL (Mock) or Base64 (Real SDK)
-                    if (photo.dataUri.startsWith('http') || photo.dataUri.startsWith('data:')) {
-                        imageUri = photo.dataUri;
-                    } else {
-                        // Assume raw base64 string if no prefix
-                        imageUri = 'data:image/jpeg;base64,' + photo.dataUri;
-                    }
+            if (photos && photos.length > 0) {
+                const photo = photos[0];
 
-                    const preview = document.getElementById('food-preview');
-                    if (preview) preview.src = imageUri;
-                }
-            } catch (error) {
-                console.error("Bedrock Album Error:", error);
-                // Fallback to standard input on error? Or just alert?
-                // For now, let's alert if specific permission error, otherwise fallback
-                if (error.name === 'FetchAlbumPhotosPermissionError') {
-                    alert("앨범 접근 권한이 필요합니다.");
+                let imageUri;
+
+                // Check if legitimate URL (Mock) or Base64 (Real SDK)
+                if (photo.dataUri.startsWith('http') || photo.dataUri.startsWith('data:')) {
+                    imageUri = photo.dataUri;
                 } else {
-                    // Fallback to standard generic file input
-                    document.getElementById('image-upload').click();
+                    // Assume raw base64 string if no prefix
+                    imageUri = 'data:image/jpeg;base64,' + photo.dataUri;
                 }
+
+                const preview = document.getElementById('food-preview');
+                if (preview) preview.src = imageUri;
             }
-        } else {
-            // Fallback for non-Toss environment (Local Dev)
-            document.getElementById('image-upload').click();
+        } catch (error) {
+            console.error("Bedrock Album Error:", error);
+
+            // Check for specific permission error string or name
+            if (error?.name === 'FetchAlbumPhotosPermissionError' || error?.toString().includes('Permission')) {
+                appLogic.showCustomAlert("앨범 접근 권한이 필요합니다.");
+            } else {
+                // Fallback to standard generic file input for non-Toss environment or general error
+                console.warn('Falling back to file input due to error.');
+                document.getElementById('image-upload').click();
+            }
         }
     },
 

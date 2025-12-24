@@ -1,7 +1,7 @@
 {
     "name": "miracle-3min",
     "version": "1.0.0",
-    "description": "앱인토스(Apps in Toss) 미니앱 - 3분의 기적",
+    "description": "앱인토스(Apps in Toss) 미니앱 - 침착해3분",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -22,6 +22,7 @@
     "dependencies": {
         "@apps-in-toss/framework": "^1.5.2",
         "@apps-in-toss/web-framework": "^1.5.2",
-        "firebase": "^12.6.0"
+        "firebase": "^12.6.0",
+        "playwright": "^1.57.0"
     }
 }

@@ -3,9 +3,9 @@ import { defineConfig } from '@apps-in-toss/web-framework/config';
 export default defineConfig({
     appName: 'miracle-3min',
     brand: {
-        displayName: '3분의 기적',
-        primaryColor: '#0f172a',
-        icon: 'https://static.toss.im/appsintoss/10277/39de51d9-a6b3-4962-b8df-101a60153bad.png',
+        displayName: '침착해3분',
+        primaryColor: '#3a75ffff',
+        icon: 'https://static.toss.im/appsintoss/10277/48924e04-4060-4571-97d2-a94c6165f86e.png',
         bridgeColorMode: 'basic',
     },
     web: {
@@ -19,5 +19,8 @@ export default defineConfig({
     permissions: [
         { name: 'photos', access: 'read' }
     ],
+    webViewProps: {
+        type: 'partner',
+    },
     outdir: 'dist',
 });

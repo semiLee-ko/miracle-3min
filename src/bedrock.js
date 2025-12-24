@@ -1,64 +1,419 @@
-// Bedrock SDK (Simplified for Miracle 3-Min)
-// Mimics find-meow/src/bedrock.js structure
+
+// Bedrock SDK (Refactored for Miracle 3-Min)
+import {
+    GoogleAdMob,
+    appLogin as frameworkAppLogin,
+    fetchAlbumPhotos as frameworkFetchAlbumPhotos,
+    generateHapticFeedback as frameworkHaptic
+} from '@apps-in-toss/web-framework';
 
 export const config = {
-    APPENTOS_APP_KEY: 'miracle-3min', // Placeholder
+    APPENTOS_APP_KEY: 'jAicsveDu9OQDtYs4m8H3v0SiI9DfhV9uKgB97_0WVA', // Placeholder
     ENV: 'dev'
 };
 
-// Exported Wrappers for convenience
-export async function loadAppsInTossAdMob(params) {
-    if (window.Bedrock && window.Bedrock.loadAppsInTossAdMob) {
-        return window.Bedrock.loadAppsInTossAdMob(params);
+let isBedrockInitialized = false;
+
+// Ad state management
+let isAdLoaded = false;
+let adCleanup = null;
+
+// Rewarded ad state management
+let isRewardedAdLoaded = false;
+let rewardedAdCleanup = null;
+
+/**
+ * 전면 광고 미리 로드 (앱 시작 시 호출)
+ */
+export async function prepareInterstitialAd() {
+
+
+    try {
+        if (!GoogleAdMob.loadAppsInTossAdMob.isSupported()) {
+            console.warn('⚠️ AdMob not supported');
+            return;
+        }
+
+        const cleanup = GoogleAdMob.loadAppsInTossAdMob({
+            options: { adGroupId: 'ait-ad-test-interstitial-id' },
+            onEvent: (event) => {
+                if (event.type === 'loaded') {
+                    isAdLoaded = true;
+
+                    cleanup(); // IMPORTANT: Must call cleanup after load success!
+                }
+            },
+            onError: (error) => {
+                console.error('❌ Ad Preload Failed:', error);
+                isAdLoaded = false;
+                cleanup && cleanup();
+            }
+        });
+    } catch (error) {
+        console.error('❌ prepareInterstitialAd Error:', error);
     }
+}
+
+// Initialize Bedrock
+export async function initializeBedrock() {
+    if (isBedrockInitialized) return;
+
+
+
+    // Framework support check
+    let supported = false;
+    try {
+        supported = GoogleAdMob.loadAppsInTossAdMob.isSupported();
+        // alert(`DEBUG: GoogleAdMob.isSupported = ${supported}`); // Too noisy, verify via logs
+
+    } catch (e) {
+        console.warn('⚠️ Framework isSupported check failed:', e);
+        // alert(`DEBUG: Framework check failed: ${e.message}`);
+    }
+
+    if (!supported) {
+        console.warn('⚠️ GoogleAdMob not supported. Initializing Mock SDK.');
+        setupMockBedrock();
+    } else {
+
+        // alert('DEBUG: Framework Native Support Enabled');
+    }
+
+    isBedrockInitialized = true;
+    setupNavigationBar();
+}
+
+/**
+ * 전면 광고 표시 (미리 로드된 광고 사용)
+ */
+export function showInterstitialAd() {
+    return new Promise((resolve) => {
+        if (!isAdLoaded) {
+
+            prepareInterstitialAd(); // Try to load for next time
+            resolve();
+            return;
+        }
+
+        try {
+            if (!GoogleAdMob.showAppsInTossAdMob.isSupported()) {
+                console.warn('⚠️ showAppsInTossAdMob not supported');
+                resolve();
+                return;
+            }
+
+
+            GoogleAdMob.showAppsInTossAdMob({
+                options: { adGroupId: 'ait-ad-test-interstitial-id' },
+                onEvent: (event) => {
+
+                    switch (event.type) {
+                        case 'show':
+
+                            break;
+                        case 'dismissed':
+
+                            isAdLoaded = false;
+                            prepareInterstitialAd(); // Preload next ad
+                            resolve();
+                            break;
+                        case 'failedToShow':
+                            console.warn('⚠️ 광고 표시 실패');
+                            isAdLoaded = false;
+                            resolve();
+                            break;
+                    }
+                },
+                onError: (error) => {
+                    console.error('❌ Failed to show Ad:', error);
+                    isAdLoaded = false;
+                    resolve();
+                }
+            });
+        } catch (error) {
+            console.error('❌ Error calling showAd:', error);
+            resolve();
+        }
+    });
+}
+
+/**
+ * 보상형 광고 미리 로드
+ */
+export async function prepareRewardedAd() {
+
+
+    try {
+        if (!GoogleAdMob.loadAppsInTossAdMob.isSupported()) {
+            console.warn('⚠️ AdMob not supported');
+            return;
+        }
+
+        const cleanup = GoogleAdMob.loadAppsInTossAdMob({
+            options: { adGroupId: 'ait-ad-test-rewarded-id' },
+            onEvent: (event) => {
+                if (event.type === 'loaded') {
+                    isRewardedAdLoaded = true;
+
+                    cleanup(); // IMPORTANT: Must call cleanup after load success!
+                }
+            },
+            onError: (error) => {
+                console.error('❌ Rewarded Ad Preload Failed:', error);
+                isRewardedAdLoaded = false;
+                cleanup && cleanup();
+            }
+        });
+    } catch (error) {
+        console.error('❌ prepareRewardedAd Error:', error);
+    }
+}
+
+/**
+ * 보상형 광고 표시 (미리 로드된 광고 사용)
+ */
+export function showRewardedAd() {
+    return new Promise((resolve) => {
+        if (!isRewardedAdLoaded) {
+
+            prepareRewardedAd(); // Try to load for next time
+            resolve({ rewarded: false });
+            return;
+        }
+
+        try {
+            if (!GoogleAdMob.showAppsInTossAdMob.isSupported()) {
+                console.warn('⚠️ showAppsInTossAdMob not supported');
+                resolve({ rewarded: false });
+                return;
+            }
+
+
+            GoogleAdMob.showAppsInTossAdMob({
+                options: { adGroupId: 'ait-ad-test-rewarded-id' },
+                onEvent: (event) => {
+
+                    switch (event.type) {
+                        case 'show':
+
+                            break;
+                        case 'userEarnedReward':
+
+                            break;
+                        case 'dismissed':
+
+                            isRewardedAdLoaded = false;
+                            prepareRewardedAd(); // Preload next ad
+                            resolve({ rewarded: true });
+                            break;
+                        case 'failedToShow':
+                            console.warn('⚠️ 보상형 광고 표시 실패');
+                            isRewardedAdLoaded = false;
+                            resolve({ rewarded: false });
+                            break;
+                    }
+                },
+                onError: (error) => {
+                    console.error('❌ Failed to show Rewarded Ad:', error);
+                    isRewardedAdLoaded = false;
+                    resolve({ rewarded: false });
+                }
+            });
+        } catch (error) {
+            console.error('❌ Error calling showRewardedAd:', error);
+            resolve({ rewarded: false });
+        }
+    });
+}
+
+// Exported Wrappers using Framework
+export async function loadAppsInTossAdMob(params) {
+
+
+    // Map internal types to Test Ad IDs
+    let adGroupId = 'ait-ad-test-interstitial-id';
+    if (params?.type === 'REWARDED') {
+        adGroupId = 'ait-ad-test-rewarded-id';
+    } else if (params?.type === 'INTERSTITIAL') {
+        adGroupId = 'ait-ad-test-interstitial-id';
+    }
+
+    // 1. Try Framework
+    try {
+        if (GoogleAdMob.loadAppsInTossAdMob.isSupported()) {
+            //alert('LOAD-DEBUG 3: Framework isSupported = true');
+
+
+            // Return Promise that resolves when ad loads
+            return new Promise((resolve, reject) => {
+                try {
+                    const cleanup = GoogleAdMob.loadAppsInTossAdMob({
+                        options: { adGroupId },
+                        onEvent: (event) => {
+                            //alert(`LOAD-EVENT: ${event.type}`);
+                            if (event.type === 'loaded') {
+                                const adId = event.data?.adId || adGroupId; // Use adId from event or fallback
+                                alert(`LOAD-DEBUG 4: 광고 로드 성공! adId=${adId}`);
+                                resolve({ adId, cleanup });
+                            }
+                        },
+                        onError: (error) => {
+                            //alert(`LOAD-DEBUG ERR: ${error.message}`);
+                            console.error('❌ Ad Load Error:', error);
+                            reject(error);
+                        }
+                    });
+                } catch (e) {
+                    //alert(`LOAD-DEBUG CATCH-ERR: ${e.message}`);
+                    reject(e);
+                }
+            });
+        } else {
+            //alert('LOAD-DEBUG 3: Framework isSupported = false');
+        }
+    } catch (e) {
+        console.warn('⚠️ Framework Ad check failed:', e);
+    }
+
+    // 2. Fallback to Window (Mock or Legacy)
+    if (window.Bedrock && window.Bedrock.loadAppsInTossAdMob) {
+        return new Promise((resolve) => {
+            window.Bedrock.loadAppsInTossAdMob({
+                options: { adGroupId },
+                onEvent: (event) => {
+                    if (event.type === 'loaded') {
+                        resolve({ adId: adGroupId });
+                    }
+                }
+            });
+        });
+    }
+
     console.warn('⚠️ Bedrock.loadAppsInTossAdMob not available');
     return { adId: 'mock_fallback_id' };
 }
 
 export async function showAppsInTossAdMob(params) {
+
+    // 1. Try Framework
+    try {
+        if (GoogleAdMob.showAppsInTossAdMob.isSupported()) {
+            //alert('SHOW-DEBUG 2: Framework isSupported = true');
+            const adId = params?.adId;
+
+            return new Promise((resolve, reject) => {
+                //alert('SHOW-DEBUG 3: GoogleAdMob.showAppsInTossAdMob 호출');
+                GoogleAdMob.showAppsInTossAdMob({
+                    options: { adGroupId: adId },
+                    onEvent: (event) => {
+                        //alert(`SHOW-EVENT: ${event.type}`);
+                        if (event.type === 'dismissed') {
+                            //alert('SHOW-DEBUG 4: 광고 닫힘');
+                            resolve({ result: 'dismissed' });
+                        } else if (event.type === 'failedToShow') {
+                            resolve({ result: 'failed' });
+                        }
+                    },
+                    onError: (error) => {
+                        //alert(`SHOW-ERR: ${error.message}`);
+                        reject(error);
+                    }
+                });
+            });
+        } else {
+            //alert('SHOW-DEBUG 2: Framework isSupported = false');
+        }
+    } catch (e) {
+        console.warn('⚠️ Framework show check failed:', e);
+        throw e; // Re-throw to propagate error
+    }
+
+    // 2. Fallback to Window
     if (window.Bedrock && window.Bedrock.showAppsInTossAdMob) {
         return window.Bedrock.showAppsInTossAdMob(params);
     }
+
     console.warn('⚠️ Bedrock.showAppsInTossAdMob not available');
     return { result: 'success' };
 }
 
-let isBedrockInitialized = false;
+export async function appLogin() {
 
-export async function initializeBedrock() {
-    if (isBedrockInitialized) return;
+    // 1. Try Framework (only if available)
+    try {
+        // Check if framework is actually loaded
+        if (typeof frameworkAppLogin === 'function') {
 
-    if (!window.Bedrock) {
-        console.warn('⚠️ Bedrock SDK not found. Initializing Mock SDK.');
-        setupMockBedrock();
+            return result;
+        } else {
+
+        }
+    } catch (e) {
+        console.warn('⚠️ Framework Login check failed:', e);
     }
 
+    // 2. Mock (for local development & sandbox)
+
+    return Promise.resolve({
+        authorizationCode: 'mock_auth_code_' + Date.now(),
+        referrer: 'local_dev'
+    });
+}
+
+export async function fetchAlbumPhotos(options) {
+    // 1. Try Framework
     try {
-        const { Bedrock } = window;
-        await Bedrock.init({
-            appKey: config.APPENTOS_APP_KEY,
-            env: config.ENV
-        });
-        console.log('✅ Bedrock initialized successfully');
-        isBedrockInitialized = true;
-        setupNavigationBar();
-    } catch (error) {
-        console.error('❌ Bedrock initialization failed:', error);
+        if (typeof frameworkFetchAlbumPhotos === 'function') {
+
+            return frameworkFetchAlbumPhotos(options);
+        }
+    } catch (e) {
+        console.warn('⚠️ Framework Album check failed:', e);
+    }
+
+    // 2. Fallback
+    if (window.Bedrock && window.Bedrock.fetchAlbumPhotos) {
+        return window.Bedrock.fetchAlbumPhotos(options);
+    }
+
+    throw new Error('FetchAlbumPhotosPermissionError'); // Simulate native error to trigger fallback in logic
+}
+
+export function generateHapticFeedback(params) {
+    try {
+        if (typeof frameworkHaptic === 'function') {
+            return frameworkHaptic(params);
+        }
+    } catch (e) {
+        console.warn('⚠️ Framework Haptic failed:', e);
+    }
+    if (window.Bedrock && window.Bedrock.generateHapticFeedback) {
+        return window.Bedrock.generateHapticFeedback(params);
     }
 }
 
+// Assign to window for legacy/iframe support (like type3.html)
+if (typeof window !== 'undefined') {
+    window.Bedrock = window.Bedrock || {};
+    window.Bedrock.generateHapticFeedback = generateHapticFeedback;
+    window.Bedrock.appLogin = appLogin; // Ensure other methods are also available
+    window.Bedrock.fetchAlbumPhotos = fetchAlbumPhotos;
+}
+
 function setupMockBedrock() {
+    if (window.Bedrock) return;
+
     window.Bedrock = {
         init: () => Promise.resolve(),
         appLogin: () => {
-            console.log('📱 Mock Toss Login Initiated');
+
             return Promise.resolve({
                 authorizationCode: 'mock_auth_code_' + Date.now(),
                 referrer: 'sandbox'
             });
         },
         fetchAlbumPhotos: (options) => {
-            console.log('🖼️ Mock Toss fetchAlbumPhotos:', options);
+
             // Return a mock result after a short delay
             return new Promise((resolve) => {
                 setTimeout(() => {
@@ -73,7 +428,7 @@ function setupMockBedrock() {
         },
         exit: () => {
             if (confirm('앱을 종료하시겠습니까? (Mock)')) {
-                console.log('App Exited');
+
             }
         },
         /**
@@ -81,11 +436,11 @@ function setupMockBedrock() {
          * Loads an ad and returns an adId.
          */
         loadAppsInTossAdMob: (params) => {
-            console.log('📺 Mock Bedrock: Loading Ad...', params);
+
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({
-                        adId: `mock_ad_${Date.now()}`,
+                        adId: `mock_ad_${Date.now()} `,
                         type: params.type
                     });
                 }, 500);
@@ -97,32 +452,21 @@ function setupMockBedrock() {
          * Shows the ad associated with the adId.
          */
         showAppsInTossAdMob: (params) => {
-            console.log('📺 Mock Bedrock: Showing Ad...', params);
+
             return new Promise((resolve) => {
-                const isRewarded = params.adId && params.adId.includes('rewarded'); // primitive check for mock
                 // In real usage, params would be checked against loaded ads.
 
-                // Determine message based on context (we don't have easy context here unless we pass it, 
-                // but for mock, let's just ask generically or infer from a saved state if needed.
-                // For simplicity, we'll prompt generic.)
+                // Remove confirm dialog for seamless UX in mock
+                // const msg = '광고가 재생됩니다. (Mock)\n끝까지 시청하시겠습니까?';
 
-                const msg = '광고가 재생됩니다. (Mock)\n끝까지 시청하시겠습니까?';
 
-                if (confirm(msg)) {
-                    setTimeout(() => {
-                        console.log('✅ Ad Watched');
-                        resolve({ result: 'success' });
-                    }, 1000);
-                } else {
-                    console.log('❌ Ad Cancelled');
-                    resolve({ result: 'cancelled' });
-                }
+                resolve({ result: 'success' });
             });
         }
     };
     window.NavigationBar = {
-        setTitle: (title) => console.log(`Title set to: ${title}`),
-        setBackButton: (opts) => console.log('Back button set:', opts)
+
+
     };
 }
 

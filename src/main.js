@@ -1,50 +1,116 @@
-import { initializeBedrock } from './bedrock.js';
+import { initializeBedrock, appLogin, prepareInterstitialAd, prepareRewardedAd } from './bedrock.js';
 import { appLogic, appState } from './logic.js';
 // Make appLogic global for inline HTML handlers
 window.appLogic = appLogic;
 import { initFirebase } from './firebase.js';
+import './modal-a11y.js'; // Modal accessibility (ESC key, focus management)
+import './ios-fixes.js'; // iOS touch and keyboard fixes
 
 async function initApp() {
-    console.log('🚀 Miracle 3-Min App Starting...');
+
 
     try {
-        await initFirebase();
         await initializeBedrock();
 
-        // --- Toss Login Flow ---
-        try {
-            if (window.Bedrock && window.Bedrock.appLogin) {
-                const loginResult = await window.Bedrock.appLogin();
-                console.log('🔑 Toss Login Auth Code:', loginResult.authorizationCode);
-                // NOTE: In a real implementation with a backend server:
-                // 1. Send `loginResult.authorizationCode` to your backend.
-                // 2. Backend calls Toss API -> Get Access Token -> Get User Info (UserKey).
-                // 3. Backend creates a custom Firebase Token for that UserKey.
-                // 4. Frontend receives token -> auth.signInWithCustomToken(token).
+        // Preload ads
+        prepareInterstitialAd();
+        prepareRewardedAd();
 
-                // For now, we continue using Firebase Anonymous Auth for persistence.
+        // --- Toss Login Flow (BEFORE Firebase init) ---
+        let tossLoginSuccess = false;
+        try {
+
+
+            if (loginResult && loginResult.authorizationCode) {
+
+
+
+
+                // Import Firebase modules
+                const { auth, functions } = await import('./firebase.js');
+                const { httpsCallable } = await import('firebase/functions');
+                const { signInWithCustomToken } = await import('firebase/auth');
+
+
+
+
+
+
+                const result = await tossLogin({
+                    authorizationCode: loginResult.authorizationCode,
+                    referrer: loginResult.referrer
+                });
+
+
+
+
+                // Sign in to Firebase with custom token
+                await signInWithCustomToken(auth, result.data.token);
+
+
+
+
+                tossLoginSuccess = true;
+            } else {
+
             }
         } catch (e) {
-            console.warn('Toss Login Skipped/Failed:', e);
+            console.warn('⚠️ Toss Login Skipped/Failed:', e);
+            console.error('Error details:', e);
+            console.error('Error code:', e.code);
+            console.error('Error message:', e.message);
+            console.error('Error details:', e.details);
+        }
+
+        // Initialize Firebase (will use existing auth if Toss login succeeded)
+        if (!tossLoginSuccess) {
+
+            await initFirebase();
+        } else {
+
+            // Just initialize the user tracking
+            const { auth } = await import('./firebase.js');
+            const { onAuthStateChanged } = await import('firebase/auth');
+            await new Promise(resolve => {
+                const unsubscribe = onAuthStateChanged(auth, (user) => {
+                    if (user) {
+
+                        unsubscribe();
+                        resolve(user);
+                    }
+                });
+            });
         }
 
         await appLogic.init();
 
-
-
         bindEvents();
 
-        console.log('✅ App Initialized');
+        // Hide loading indicator
+        const loadingEl = document.getElementById('loading-indicator');
+        if (loadingEl) loadingEl.style.display = 'none';
+
+
     } catch (error) {
         console.error('❌ App Init Failed:', error);
     }
 }
 
 function bindEvents() {
-    // Main Screen Buttons
+    // Main Screen Buttons - with debounce to prevent double-click
+    let isStarting = false;
     document.getElementById('start-btn')?.addEventListener('click', (e) => {
+        // Prevent double-click
+        if (isStarting) {
+
+            return;
+        }
+        isStarting = true;
+
         // Create ripple effect
         const button = e.currentTarget;
+        button.disabled = true; // Disable button immediately
+
         const ripple = document.createElement('span');
         ripple.classList.add('ripple');
 
@@ -65,15 +131,7 @@ function bindEvents() {
         setTimeout(() => appLogic.startMainTimer(), 200);
     });
 
-    document.getElementById('btn-giveup')?.addEventListener('click', () => {
-        const savingsFormatted = appState.sessionSavings.toLocaleString();
-        appLogic.showCustomConfirm(
-            `정말요? ${savingsFormatted}원이 공중분해 됩니다.`,
-            () => {
-                location.reload();
-            }
-        );
-    });
+
 
     // Tools - Open
     document.getElementById('btn-blue')?.addEventListener('click', () => appLogic.openTool('blue'));
@@ -111,35 +169,31 @@ function bindEvents() {
     document.getElementById('btn-labor-calc')?.addEventListener('click', appLogic.calculateLabor);
 
     // Restart - Save to DB after ad watch, then reload
-    document.getElementById('btn-restart')?.addEventListener('click', async () => {
+    // Restart - Save to DB after ad watch (handled in checkDailyLimit), then reload
+    // Restart - Save to DB after ad watch (handled in checkDailyLimit), then reload
+    let isRestarting = false;
+    document.getElementById('btn-restart')?.addEventListener('click', async (e) => {
+        if (isRestarting) return;
+        isRestarting = true;
+
+        const btn = e.currentTarget;
+        btn.style.opacity = '0.5';
+        btn.style.pointerEvents = 'none';
+
         // Import dependencies dynamically
-        const { saveRecord, getTodaySuccessCount } = await import('./firebase.js');
+        const { saveRecord } = await import('./firebase.js');
         const { appState } = await import('./logic.js');
-        const { loadAppsInTossAdMob, showAppsInTossAdMob } = await import('./bedrock.js');
 
-        // 1. Check Today's Success Count
-        const count = await getTodaySuccessCount();
-        console.log(`📊 Today's Success Count: ${count}`);
+        // Check Daily Limit (Handles Ad Logic internally)
+        // This awaits until the ad is CLOSED or SKIPPED
+        const canProceed = await appLogic.checkDailyLimit();
 
-        // 2. Determine Ad Type
-        // Guide implies specific types, let's assume 'INTERSTITIAL' and 'REWARDED' strings or similar.
-        // We'll use uppercase standard keys commonly used in AdMob wrappers.
-        const adType = count < 5 ? 'INTERSTITIAL' : 'REWARDED';
-
-        // 3. Load & Show Ad (AppsInToss Standard Pattern)
-        try {
-            console.log(`⏳ Loading Ad (${adType})...`);
-            const adInfo = await loadAppsInTossAdMob({ type: adType });
-
-            if (adInfo && adInfo.adId) {
-                console.log(`▶️ Showing Ad (${adInfo.adId})...`);
-                await showAppsInTossAdMob({ adId: adInfo.adId });
-            } else {
-                console.warn('⚠️ Ad Load Failed or No Fill');
-            }
-        } catch (e) {
-            console.error('Ad Flow Error:', e);
-            // Fail open: continue to save even if ad fails
+        if (!canProceed) {
+            // User cancelled (only for rewarded ads)
+            isRestarting = false;
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+            return;
         }
 
         // 4. Save current session to Firebase
@@ -148,6 +202,35 @@ function bindEvents() {
         // 5. Reload page
         location.reload();
     });
+
+    // Particle bubbles - Add click handlers
+    const setupBubbleHandlers = () => {
+        document.querySelectorAll('.particle').forEach(particle => {
+            // Use both click and touchstart for better mobile support
+            const popBubble = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                particle.style.animation = 'pop 0.3s ease-out forwards';
+                setTimeout(() => particle.remove(), 300);
+            };
+
+            particle.addEventListener('click', popBubble);
+            particle.addEventListener('touchstart', popBubble, { passive: false });
+        });
+    };
+
+    // Setup initially
+    setupBubbleHandlers();
+
+    // Re-setup when new bubbles are added (MutationObserver)
+    const observer = new MutationObserver(() => {
+        setupBubbleHandlers();
+    });
+
+    const bgParticles = document.querySelector('.bg-particles');
+    if (bgParticles) {
+        observer.observe(bgParticles, { childList: true });
+    }
 }
 
 if (document.readyState === 'loading') {

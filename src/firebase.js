@@ -1,6 +1,7 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, increment, serverTimestamp, collection, addDoc, query, where, getDocs, Timestamp, orderBy } from "firebase/firestore";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 const firebaseConfig = {
     apiKey: "AIzaSyALxzp8NTMb05UygqzEQskMsUmF5Si1e-U",
@@ -17,6 +18,7 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const functions = getFunctions(app, 'asia-northeast3'); // Seoul region
 
 let currentUser = null;
 
@@ -26,7 +28,7 @@ export const initFirebase = () => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                console.log("🔥 Firebase User:", user.uid);
+
                 unsubscribe();
                 resolve(user);
             } else {
@@ -43,7 +45,7 @@ export const initFirebase = () => {
 export const saveRecord = async (savedMoney, calories) => {
     if (!currentUser) return;
 
-    const userRef = doc(db, "users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
     const historyRef = collection(userRef, "history");
 
     try {
@@ -60,7 +62,7 @@ export const saveRecord = async (savedMoney, calories) => {
             date: serverTimestamp()
         });
 
-        console.log("✅ Record Saved to Firebase");
+
     } catch (e) {
         console.error("Error saving record:", e);
     }
@@ -69,7 +71,7 @@ export const saveRecord = async (savedMoney, calories) => {
 // Get Total Savings
 export const getTotalSavings = async () => {
     if (!currentUser) return 0;
-    const userRef = doc(db, "users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
     try {
         const snap = await getDoc(userRef);
         if (snap.exists()) {
@@ -85,7 +87,7 @@ export const getTotalSavings = async () => {
 // Get Success Count
 export const getSuccessCount = async () => {
     if (!currentUser) return 0;
-    const userRef = doc(db, "users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
     try {
         const snap = await getDoc(userRef);
         if (snap.exists()) {
@@ -101,7 +103,7 @@ export const getSuccessCount = async () => {
 // Inject Mock Data (Run once to seed data for charts)
 export const injectMockData = async () => {
     if (!currentUser) return;
-    const userRef = doc(db, "users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
     const historyRef = collection(userRef, "history");
 
     // 3 weeks ago (approx)
@@ -116,14 +118,14 @@ export const injectMockData = async () => {
     await addDoc(historyRef, { amount: 20000, date: Timestamp.fromDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) });
     await addDoc(historyRef, { amount: 25000, date: Timestamp.fromDate(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)) });
 
-    console.log("✅ Mock Data Injected");
+
 };
 
 // Get Monthly Stats (Current Calendar Month)
 export const getMonthlyStats = async () => {
     if (!currentUser) return 0;
 
-    const userRef = doc(db, "users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
     const historyRef = collection(userRef, "history");
 
     // Get First Day of Current Month
@@ -149,7 +151,7 @@ export const getMonthlyStats = async () => {
 export const getWeeklyStats = async () => {
     if (!currentUser) return [0, 0, 0, 0];
 
-    const userRef = doc(db, "users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
     const historyRef = collection(userRef, "history");
 
     // Helper: Get Monday of the week for a given date
@@ -211,7 +213,7 @@ export const getWeeklyStats = async () => {
 // Get Today's Success Count
 export const getTodaySuccessCount = async () => {
     if (!currentUser) return 0;
-    const userRef = doc(db, "users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
     const historyRef = collection(userRef, "history");
 
     // Start of Today
@@ -232,11 +234,11 @@ export const getTodaySuccessCount = async () => {
 // Reset User Data (Clear History & Aggregates)
 export const resetUserData = async () => {
     if (!currentUser) return;
-    const userRef = doc(db, "users", currentUser.uid);
+    const userRef = doc(db, "miracle-3min-users", currentUser.uid);
     const historyRef = collection(userRef, "history");
 
     try {
-        console.log("⚠️ Resetting User Data...");
+
 
         // 1. Delete all history documents
         const snapshot = await getDocs(historyRef);
@@ -250,7 +252,7 @@ export const resetUserData = async () => {
             lastPlayed: serverTimestamp()
         }, { merge: true });
 
-        console.log("✅ User Data Reset Complete");
+
     } catch (e) {
         console.error("Error resetting data:", e);
     }
