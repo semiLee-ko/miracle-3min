@@ -35,8 +35,8 @@ export async function prepareInterstitialAd() {
         }
 
         const cleanup = GoogleAdMob.loadAppsInTossAdMob({
-            //options: { adGroupId: 'ait.v2.live.35a5357d08ca409f' },
-            options: { adGroupId: 'ait-ad-test-interstitial-id' },
+            options: { adGroupId: 'ait.v2.live.35a5357d08ca409f' },
+            //options: { adGroupId: 'ait-ad-test-interstitial-id' },
             onEvent: (event) => {
                 if (event.type === 'loaded') {
                     isAdLoaded = true;
@@ -105,8 +105,8 @@ export function showInterstitialAd() {
 
 
             GoogleAdMob.showAppsInTossAdMob({
-                //options: { adGroupId: 'ait.v2.live.35a5357d08ca409f' },
-                options: { adGroupId: 'ait-ad-test-interstitial-id' },
+                options: { adGroupId: 'ait.v2.live.35a5357d08ca409f' },
+                //options: { adGroupId: 'ait-ad-test-interstitial-id' },
                 onEvent: (event) => {
 
                     switch (event.type) {
@@ -152,8 +152,8 @@ export async function prepareRewardedAd() {
         }
 
         const cleanup = GoogleAdMob.loadAppsInTossAdMob({
-            //options: { adGroupId: 'ait.v2.live.1285567918504cc7' },
-            options: { adGroupId: 'ait-ad-test-rewarded-id' },
+            options: { adGroupId: 'ait.v2.live.1285567918504cc7' },
+            //options: { adGroupId: 'ait-ad-test-rewarded-id' },
             onEvent: (event) => {
                 if (event.type === 'loaded') {
                     isRewardedAdLoaded = true;
@@ -193,8 +193,8 @@ export function showRewardedAd() {
 
 
             GoogleAdMob.showAppsInTossAdMob({
-                //options: { adGroupId: 'ait.v2.live.1285567918504cc7' },
-                options: { adGroupId: 'ait-ad-test-rewarded-id' },
+                options: { adGroupId: 'ait.v2.live.1285567918504cc7' },
+                //options: { adGroupId: 'ait-ad-test-rewarded-id' },
                 onEvent: (event) => {
 
                     switch (event.type) {
@@ -235,14 +235,14 @@ export async function loadAppsInTossAdMob(params) {
 
 
     // Map internal types to Live Ad IDs
-    //let adGroupId = 'ait.v2.live.35a5357d08ca409f'; // Interstitial
-    let adGroupId = 'ait-ad-test-interstitial-id'; // Interstitial
+    let adGroupId = 'ait.v2.live.35a5357d08ca409f'; // Interstitial
+    //let adGroupId = 'ait-ad-test-interstitial-id'; // Interstitial
     if (params?.type === 'REWARDED') {
-        //adGroupId = 'ait.v2.live.1285567918504cc7';
-        adGroupId = 'ait-ad-test-rewarded-id';
+        adGroupId = 'ait.v2.live.1285567918504cc7';
+        //adGroupId = 'ait-ad-test-rewarded-id';
     } else if (params?.type === 'INTERSTITIAL') {
-        //adGroupId = 'ait.v2.live.35a5357d08ca409f';
-        adGroupId = 'ait-ad-test-interstitial-id';
+        adGroupId = 'ait.v2.live.35a5357d08ca409f';
+        //adGroupId = 'ait-ad-test-interstitial-id';
     }
 
     // 1. Try Framework
